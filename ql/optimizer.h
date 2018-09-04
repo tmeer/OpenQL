@@ -71,7 +71,7 @@ protected:
         return res;
     }
 
-#define __epsilon__ (1e-4)
+    #define __epsilon__ (1e-4)
 
     bool is_id(ql::cmat_t& mat)
     {

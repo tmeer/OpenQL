@@ -53,12 +53,18 @@ int main(int argc, char ** argv)
 {
    srand(0);
 
-   int   num_circuits       = 4;
-   float sweep_points[]   = { 2, 4, 8, 16 };  // sizes of the clifford circuits per randomization
+   size_t   num_circuits       = 4;
+   size_t   num_qubits         = 1;
+   float    sweep_points[]   = { 2, 4, 8, 16 };  // sizes of the clifford circuits per randomization
 
-   // ql::init(ql::transmon_platform, "instructions.map");
-   // ql::init();
-   // ql::init(ql::transmon_platform, "instructions.map");
+   // openql runtime options
+   ql::options::set("log_level", "LOG_NOTHING");
+   ql::options::set("output_dir", "output");
+   ql::options::set("optimize", "no");
+   ql::options::set("scheduler", "ASAP");
+   ql::options::set("use_default_gates", "yes");
+   ql::options::set("optimize", "no");
+   ql::options::set("decompose_toffoli", "no");
 
    // create platform
    ql::quantum_platform starmon("starmon","test_cfg_cbox.json");
@@ -70,14 +76,17 @@ int main(int argc, char ** argv)
    ql::set_platform(starmon);
 
    // ql::sweep_points_t sweep_points;
+   
+   // create program
+   ql::quantum_program rb("rb",starmon,num_qubits,0);
 
-   ql::quantum_program rb("rb",1,starmon);
-
+   // set sweep points
    rb.set_sweep_points(sweep_points, num_circuits);
+   
+   // create kernel
+   ql::quantum_kernel kernel("rb16",starmon,num_qubits,0);
 
-   ql::quantum_kernel kernel("rb1024",starmon);
-
-   build_rb(1024, kernel);
+   build_rb(16, kernel);
 
    // kernel.loop(10);
 
