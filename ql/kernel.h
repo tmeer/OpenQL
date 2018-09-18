@@ -940,6 +940,7 @@ public:
         ql::rotations_merging rm;
         if (contains_measurements(c))
         {
+            COUT("kernel::optimize() : circuit " << name << " contains measurements.");
             // decompose the circuit
             std::vector<circuit*> cs = split_circuit(c);
             std::vector<circuit > cs_opt;
@@ -962,6 +963,7 @@ public:
         }
         else
         {
+            COUT("kernel::optimize() : circuit " << name << " does not contains measurements.");
             c = rm.optimize(c);
         }
 
@@ -1048,7 +1050,7 @@ public:
 
     std::vector<circuit*> split_circuit(circuit x)
     {
-        IOUT("circuit decomposition in basic blocks ... ");
+        COUT("circuit decomposition in basic blocks ... ");
         std::vector<circuit*> cs;
         cs.push_back(new circuit());
         for (size_t i=0; i<x.size(); i++)
@@ -1064,14 +1066,14 @@ public:
                 cs.back()->push_back(x[i]);
             }
         }
-        IOUT("circuit decomposion done (" << cs.size() << ").");
+        println("circuit decomposion done (" << cs.size() << ").");
         /*
            for (int i=0; i<cs.size(); ++i)
            {
            println(" |-- circuit " << i);
            print(*(cs[i]));
            }
-         */
+        */
         return cs;
     }
 

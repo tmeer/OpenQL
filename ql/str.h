@@ -52,8 +52,8 @@ namespace str
       size_t index = str.find(seq);
       while (index < str.size())
       {
-	 str.replace(index, seq.size(), rep);
-	 index = str.find(seq);
+         str.replace(index, seq.size(), rep);
+         index = str.find(seq);
       }
    }
 
@@ -71,8 +71,8 @@ namespace str
       size_t count = 0, index = str.find(seq);
       while (index < str.size()) // && index >= 0 )
       {
-	 count++;
-	 index = str.find(seq, index+1);
+         count++;
+         index = str.find(seq, index+1);
       }
       return count;
    }
@@ -94,9 +94,9 @@ namespace str
       size_t  prev = 0;
       while (index < str.size()) // && index >= 0 )
       {
-	 wrds.push_back(str.substr(prev,index-prev));
-	 prev=index+1;
-	 index = str.find(separator, index+1);
+         wrds.push_back(str.substr(prev,index-prev));
+         prev=index+1;
+         index = str.find(separator, index+1);
       }
       wrds.push_back(str.substr(prev));
       return wrds;
@@ -112,11 +112,25 @@ namespace str
    {
       for (size_t i=0; i<str.size(); ++i)
       {
-	 char c = str[i];
-	 if(c<='Z' && c>='A')
-	    str[i] = c-('Z'-'z');
+         char c = str[i];
+         if(c<='Z' && c>='A')
+            str[i] = c-('Z'-'z');
       }
    }
+
+
+   /**
+    * @param str
+    * @param substr
+    * @brief
+    *   check wether str contains substr
+    */
+   inline bool contains(std::string& str, std::string substr)
+   {
+      std::size_t found = str.find(substr);
+      return (found != std::string::npos);
+   }
+
 
    /**
     * @param str 
@@ -136,9 +150,9 @@ namespace str
       replace_all(line, " , ", ",");
 
       if (line[0] == ' ')
-	 line.erase(0, 1);
+         line.erase(0, 1);
       if (line[line.size()-1] == ' ')
-	 line.erase(line.size()-1, 1);
+         line.erase(line.size()-1, 1);
    }
 
    /**
@@ -151,7 +165,7 @@ namespace str
    {
       size_t p = line.find(c);
       if (p != std::string::npos)
-	 line = line.substr(0,p); 
+         line = line.substr(0,p); 
    }
 
 
@@ -177,13 +191,13 @@ namespace str
    {
       switch (x)
       {
-	 case '\f' : return true; 
-	 case '\n' : return true; 
-	 case '\r' : return true; 
-	 case '\t' : return true; 
-	 case '\v' : return true; 
-	 case ' '  : return true; 
-	 default   : return false; 
+         case '\f' : return true; 
+         case '\n' : return true; 
+         case '\r' : return true; 
+         case '\t' : return true; 
+         case '\v' : return true; 
+         case ' '  : return true; 
+         default   : return false; 
       }
    }
 
@@ -202,7 +216,7 @@ namespace str
    {
       return (((x >= 'a') && (x<='z')) || ((x >= 'A') && (x<='Z')) || (x == '_'));
    }
-   
+
    /**
     * is dot
     */
@@ -240,14 +254,12 @@ namespace str
    {
       for (size_t i=0; i<str.size(); ++i)
       {
-	 char c = str[i];
-	 if (is_letter(c) || is_digit(c))
-	    return false;
+         char c = str[i];
+         if (is_letter(c) || is_digit(c))
+            return false;
       }
       return true;
    }
-
-
 
    /**
     * int to string

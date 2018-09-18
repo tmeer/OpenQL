@@ -25,7 +25,9 @@ namespace ql
    {
       std::cout << "-------------------" << std::endl;
       for (size_t i=0; i<c.size(); i++)
-	  	std::cout << "   " << c[i]->qasm() << std::endl;
+      {
+         std::cout << "   " << c[i]->qasm() << "(" << __print_gate_type(c[i]->type()) <<  ")" << std::endl;
+      }
       std::cout << "\n-------------------" << std::endl;
    }
 }

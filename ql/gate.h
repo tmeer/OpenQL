@@ -202,6 +202,46 @@ const complex_t nop_c      [] /*__attribute__((aligned(64)))*/ =
 
 #undef __c
 
+// print human readable gate type
+std::string __print_gate_type(gate_type_t t)
+{
+   switch (t)
+   {
+      case __identity_gate__  :  return std::string(" gate_type : __identity_gate__");    
+      case __hadamard_gate__  :  return std::string(" gate_type : __hadamard_gate__"); 
+      case __pauli_x_gate__   :  return std::string(" gate_type : __pauli_x_gate__ "); 
+      case __pauli_y_gate__   :  return std::string(" gate_type : __pauli_y_gate__ "); 
+      case __pauli_z_gate__   :  return std::string(" gate_type : __pauli_z_gate__ "); 
+      case __phase_gate__     :  return std::string(" gate_type : __phase_gate__   "); 
+      case __phasedag_gate__  :  return std::string(" gate_type : __phasedag_gate__"); 
+      case __t_gate__         :  return std::string(" gate_type : __t_gate__       "); 
+      case __tdag_gate__      :  return std::string(" gate_type : __tdag_gate__    "); 
+      case __rx90_gate__      :  return std::string(" gate_type : __rx90_gate__    "); 
+      case __mrx90_gate__     :  return std::string(" gate_type : __mrx90_gate__   "); 
+      case __rx180_gate__     :  return std::string(" gate_type : __rx180_gate__   "); 
+      case __ry90_gate__      :  return std::string(" gate_type : __ry90_gate__    "); 
+      case __mry90_gate__     :  return std::string(" gate_type : __mry90_gate__   "); 
+      case __ry180_gate__     :  return std::string(" gate_type : __ry180_gate__   "); 
+      case __rx_gate__        :  return std::string(" gate_type : __rx_gate__      "); 
+      case __ry_gate__        :  return std::string(" gate_type : __ry_gate__      "); 
+      case __rz_gate__        :  return std::string(" gate_type : __rz_gate__      "); 
+      case __prepz_gate__     :  return std::string(" gate_type : __prepz_gate__   "); 
+      case __cnot_gate__      :  return std::string(" gate_type : __cnot_gate__    "); 
+      case __cphase_gate__    :  return std::string(" gate_type : __cphase_gate__  "); 
+      case __toffoli_gate__   :  return std::string(" gate_type : __toffoli_gate__ "); 
+      case __custom_gate__    :  return std::string(" gate_type : __custom_gate__  "); 
+      case __composite_gate__ :  return std::string(" gate_type : __composite_gate__");
+      case __measure_gate__   :  return std::string(" gate_type : __measure_gate__ "); 
+      case __display__        :  return std::string(" gate_type : __display__      "); 
+      case __display_binary__ :  return std::string(" gate_type : __display_binary__");
+      case __nop_gate__       :  return std::string(" gate_type : __nop_gate__     "); 
+      case __dummy_gate__     :  return std::string(" gate_type : __dummy_gate__   "); 
+      case __swap_gate__      :  return std::string(" gate_type : __swap_gate__    "); 
+      case __wait_gate__      :  return std::string(" gate_type : __wait_gate__    "); 
+      case __classical_gate__ :  return std::string(" gate_type : __classical_gate__");
+      default                 :  return std::string(" gate type : unknown");
+   }
+}
 
 /**
  * gate interface
@@ -1300,6 +1340,7 @@ public:
     instruction_type_t  operation_type;   // operation type : rf/flux
     strings_t           used_hardware;    // used hardware
     std::string         arch_operation_name;  // name of instruction in the architecture (e.g. cc_light_instr)
+    gate_type_t         gate_type;        // type of the gate (needed by the optimizer) 
 
 public:
 
@@ -1317,6 +1358,7 @@ public:
     custom_gate(const custom_gate& g)
     {
         name = g.name;
+        gate_type = detect_type();
         creg_operands = g.creg_operands;
         parameters = g.parameters;
         qumis.assign(g.qumis.begin(), g.qumis.end());
@@ -1338,6 +1380,7 @@ public:
                 m(m), parameters(parameters), qumis(qumis), operation_type(operation_type)
     {
         this->name = name;
+        gate_type = detect_type();
         this->duration = duration;
         for (size_t i=0; i<hardware.size(); i++)
             used_hardware.push_back(hardware[i]);
@@ -1349,6 +1392,7 @@ public:
     custom_gate(string_t name, string_t& file_name)
     {
         this->name = name;
+        gate_type = detect_type();
         std::ifstream f(file_name);
         if (f.is_open())
         {
@@ -1367,6 +1411,7 @@ public:
     custom_gate(std::string& name, json& instr)
     {
         this->name = name;
+        gate_type = detect_type();
         load(instr);
     }
 
@@ -1394,6 +1439,21 @@ public:
     {
         std::string id = qubit.substr(1);
         return (atoi(id.c_str()));
+    }
+
+    /**
+     * detect special types such as measurement and preparation
+     *   (required for the optimizer)
+     */
+    ql::gate_type_t detect_type()
+    {
+       // ... // TO DO
+       println("detect_type (name = " << name << ")");
+       if (str::contains(name,"measure"))
+          return __measure_gate__;
+       if (str::contains(name,"prepz"))
+          return __prepz_gate__;
+       return __custom_gate__;
     }
 
     /**
@@ -1507,7 +1567,7 @@ public:
      */
     gate_type_t type()
     {
-        return __custom_gate__;
+        return gate_type; // __custom_gate__;
     }
 
     /**

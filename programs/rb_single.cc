@@ -60,10 +60,9 @@ int main(int argc, char ** argv)
    // openql runtime options
    ql::options::set("log_level", "LOG_NOTHING");
    ql::options::set("output_dir", "output");
-   ql::options::set("optimize", "no");
+   ql::options::set("optimize", "yes");
    ql::options::set("scheduler", "ASAP");
    ql::options::set("use_default_gates", "yes");
-   ql::options::set("optimize", "no");
    ql::options::set("decompose_toffoli", "no");
 
    // create platform

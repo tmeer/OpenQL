@@ -31,7 +31,6 @@ namespace ql
           opt_name2opt_val["optimize"] = "no";
           opt_name2opt_val["scheduler"] = "ASAP";
           opt_name2opt_val["use_default_gates"] = "yes";
-          opt_name2opt_val["optimize"] = "no";
           opt_name2opt_val["decompose_toffoli"] = "no";
 
           // add options with default values and list of possible values
