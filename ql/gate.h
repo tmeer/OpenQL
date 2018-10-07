@@ -1448,7 +1448,7 @@ public:
     ql::gate_type_t detect_type()
     {
        // ... // TO DO
-       println("detect_type (name = " << name << ")");
+       // println("detect_type (name = " << name << ")");
        if (str::contains(name,"measure"))
           return __measure_gate__;
        if (str::contains(name,"prepz"))

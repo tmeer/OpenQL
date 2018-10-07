@@ -518,7 +518,7 @@ public:
         std::vector<size_t> all_qubits, std::vector<size_t> cregs = {})
     {
         bool added = false;
-        DOUT("Checking if specialized decomposition is available for " << gate_name);
+        DOUT("checking if specialized decomposition is available for " << gate_name);
         std::string instr_parameterized = gate_name + " ";
         size_t i;
         if(all_qubits.size() > 0)
@@ -937,6 +937,10 @@ public:
 
     void optimize()
     {
+        ql::kernel_splitter ks(qubit_count,c);
+        circuit oc = c;
+        c.clear();
+        c = ks.optimize(oc);
         ql::rotations_merging rm;
         if (contains_measurements(c))
         {

@@ -22,7 +22,7 @@ typedef std::vector<int> cliffords_t;
 /**
  * build rb circuit
  */
-void build_rb(int num_cliffords, ql::quantum_kernel& k)
+void build_rb(int num_cliffords, ql::quantum_kernel& k, size_t q)
 {
    assert((num_cliffords%2) == 0);
    int n = num_cliffords/2;
@@ -39,11 +39,11 @@ void build_rb(int num_cliffords, ql::quantum_kernel& k)
    }
    cl.insert(cl.begin(),inv_cl.begin(),inv_cl.end());
 
-   k.prepz(0);
+   k.prepz(q);
    // build the circuit
    for (int i=0; i<num_cliffords; ++i)
-      k.clifford(cl[i]);
-   k.measure(0);
+      k.clifford(cl[i],q);
+   k.measure(q);
 
    return;
 }
@@ -51,10 +51,10 @@ void build_rb(int num_cliffords, ql::quantum_kernel& k)
 
 int main(int argc, char ** argv)
 {
-   srand(0);
+   srand(argc);
 
    size_t   num_circuits       = 4;
-   size_t   num_qubits         = 1;
+   size_t   num_qubits         = 2;
    float    sweep_points[]   = { 2, 4, 8, 16 };  // sizes of the clifford circuits per randomization
 
    // openql runtime options
@@ -85,7 +85,9 @@ int main(int argc, char ** argv)
    // create kernel
    ql::quantum_kernel kernel("rb16",starmon,num_qubits,0);
 
-   build_rb(16, kernel);
+   // build rb
+   build_rb(2, kernel, 0);
+   build_rb(2, kernel, 1);
 
    // kernel.loop(10);
 
