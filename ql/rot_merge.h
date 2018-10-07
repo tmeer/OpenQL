@@ -23,7 +23,8 @@ namespace ql
          circuit optimize(circuit& ic /*, bool verbose=false */)
          {
             circuit c=ic;
-            IOUT("[+] optimizer::rotations_merging::input_circuit");
+            COUT("[+] optimizer::rotations_merging::input_circuit");
+            print_mat(c);
             // ql::print(c);
 
             // if (verbose) COUT("optimizing circuit...");
@@ -37,7 +38,7 @@ namespace ql
             if (c.size()>1)
                c = optimize_sliding_window(c,2);
 
-            IOUT("[+] optimizer::rotations_merging::output_circuit");
+            COUT("[+] optimizer::rotations_merging::output_circuit");
             // ql::print(c);
 
             // if (verbose) COUT("optimization done.");
@@ -77,8 +78,8 @@ namespace ql
           */
          bool is_id(ql::cmat_t& mat)
          {
-            // mat.dump();
             ql::complex_t * m = mat.m;
+            println(">>>>> resultant matrix : ");
             mat.dump();
             if ((std::abs(std::abs(m[0].real())-1.0))>__epsilon__) return false;
             if ((std::abs(m[0].imag())  )>__epsilon__) return false;
@@ -88,8 +89,21 @@ namespace ql
             if ((std::abs(m[2].imag())  )>__epsilon__) return false;
             if ((std::abs(std::abs(m[3].real())-1.0))>__epsilon__) return false;
             if ((std::abs(m[3].imag())  )>__epsilon__) return false;
-            // COUT("identity !");
+            COUT("identity !");
             return true;
+         }
+
+         /**
+          * print gate matrices
+          */
+         void print_mat(ql::circuit& c)
+         {
+            std::cout << "rot_merge : circuit (" << c.size() << ")" << std::endl;
+            for (auto g : c)
+            {
+               std::cout << g->qasm() << std::endl;
+               g->mat().dump();
+            }
          }
 
          /**
@@ -97,6 +111,8 @@ namespace ql
           */
          bool is_identity(ql::circuit& c)
          {
+            println(">>>>>>> is_identity: ");
+            print_mat(c);
             if (c.size()==1)
                return false;
             ql::cmat_t m = c[0]->mat();

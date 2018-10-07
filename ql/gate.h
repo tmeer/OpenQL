@@ -148,12 +148,14 @@ const complex_t rx180_c [] /* __attribute__((aligned(64))) */ = { __c(0.0, 0.0),
                                                                   __c(0.0,-1.0), __c(0.0, 0.0)
                                                                 };   /* rx180 */
 
-const complex_t ry180_c [] /* __attribute__((aligned(64))) */ = { __c(0.0, 0.0), __c(-1.0, 0.0),
-                                                                  __c(1.0, 0.0), __c( 0.0, 0.0)
+const complex_t ry180_c [] /* __attribute__((aligned(64))) */ = { __c(0.0, 0.0), __c( 0.0, -1.0),
+                                                                  __c(0.0, 1.0), __c( 0.0,  0.0)
                                                                 };   /* ry180 */
 
 /**
- * to do : multi-qubit gates should not be represented by their matrix (the matrix depends on the ctrl/target qubit locations, the simulation using such matrix is inefficient as well...)
+ * to do : multi-qubit gates should not be represented by their matrix (the matrix 
+ * depends on the ctrl/target qubit locations, the simulation using such matrix is 
+ * inefficient as well...)
  */
 
 const complex_t cnot_c [] /* __attribute__((aligned(64))) */ =

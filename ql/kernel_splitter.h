@@ -209,9 +209,9 @@ namespace ql
             gate_dependency_graph g(num_qubits,&c);
             g.build();
             split(g,rc);
-            // println("[+] rescheduled circuit : ");
-            // for (auto g : rc)
-            //    println(g->qasm());
+            println("[+] rescheduled circuit : ");
+            for (auto g : rc)
+               println(g->qasm());
             return rc;
          }
 
