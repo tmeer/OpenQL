@@ -54,7 +54,7 @@ int main(int argc, char ** argv)
    srand(argc);
 
    size_t   num_circuits       = 4;
-   size_t   num_qubits         = 2;
+   size_t   num_qubits         = 4;
    float    sweep_points[]   = { 2, 4, 8, 16 };  // sizes of the clifford circuits per randomization
 
    // openql runtime options
@@ -63,7 +63,7 @@ int main(int argc, char ** argv)
    ql::options::set("optimize", "yes");
    ql::options::set("scheduler", "ASAP");
    ql::options::set("use_default_gates", "yes");
-   ql::options::set("decompose_toffoli", "no");
+   ql::options::set("decompose_toffoli", "yes");
 
    // create platform
    ql::quantum_platform starmon("starmon","test_cfg_cbox.json");
@@ -83,14 +83,15 @@ int main(int argc, char ** argv)
    rb.set_sweep_points(sweep_points, num_circuits);
    
    // create kernel
-   ql::quantum_kernel kernel("rb16",starmon,num_qubits,0);
+   ql::quantum_kernel kernel("rb4",starmon,num_qubits,0);
 
    // build rb
-   build_rb(2, kernel, 0);
-   build_rb(2, kernel, 1);
+   build_rb(4, kernel, 0);
+   build_rb(8, kernel, 1);
+   // build_rb(4, kernel, 2);
+   // build_rb(8, kernel, 3);
 
    // kernel.loop(10);
-
    rb.add(kernel);
 
    // std::cout<< rb.qasm() << std::endl;
