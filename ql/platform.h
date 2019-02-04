@@ -22,6 +22,7 @@ typedef enum __ql_platform_t
     transmon_platform,
     starmon_platform,
     qx_simulator_platform,
+    ideal_platform,
     unsupported_platform
 } ql_platform_t;
 
