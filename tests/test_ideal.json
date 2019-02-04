@@ -1,0 +1,218 @@
+{
+   "eqasm_compiler" : "ideal_compiler",
+
+   "hardware_settings": {
+	 "qubit_number": 7,
+	 "cycle_time" : 20
+   },
+
+  "resources" : 
+  {
+    "qubits":
+    {
+        "description": "Each qubit can be used by only one gate at a time. There are 'count' qubits.",
+        "count": 7
+    }
+  }, 
+
+  "topology" : 
+  {
+    "description": "A qubit grid is rectangular. The coordinates in the X direction are 0 to x_size-1. In the Y direction they are 0 to y_size-1. In the grid real qubits are placed. Each qubit has an id (its index, used above in the resource descriptions, and used below as operands to gates), an x and a y coordinate. Qubits are connected in directed pairs, called edges. Each edge has an id (its index, used above in the resource descriptions), a source qubit and a destination qubit.",
+    "x_size": 5,
+    "y_size": 3,
+    "qubits": 
+    [ 
+      { "id": 0,  "x": 1, "y": 2 },
+      { "id": 1,  "x": 3, "y": 2 },
+      { "id": 2,  "x": 0, "y": 1 },
+      { "id": 3,  "x": 2, "y": 1 },
+      { "id": 4,  "x": 4, "y": 1 },
+      { "id": 5,  "x": 1, "y": 0 },
+      { "id": 6,  "x": 3, "y": 0 }
+    ],
+    "edges": 
+    [
+      { "id": 0,  "src": 2, "dst": 0 },
+      { "id": 1,  "src": 0, "dst": 3 },
+      { "id": 2,  "src": 3, "dst": 1 },
+      { "id": 3,  "src": 1, "dst": 4 },
+      { "id": 4,  "src": 2, "dst": 5 },
+      { "id": 5,  "src": 5, "dst": 3 },
+      { "id": 6,  "src": 3, "dst": 6 },
+      { "id": 7,  "src": 6, "dst": 4 },
+      { "id": 8,  "src": 0, "dst": 2 },
+      { "id": 9,  "src": 3, "dst": 0 },
+      { "id": 10,  "src": 1, "dst": 3 },
+      { "id": 11,  "src": 4, "dst": 1 },
+      { "id": 12,  "src": 5, "dst": 2 },
+      { "id": 13,  "src": 3, "dst": 5 },
+      { "id": 14,  "src": 6, "dst": 3 },
+      { "id": 15,  "src": 4, "dst": 6 }
+
+    ]
+  },
+
+   "instructions": {
+   "prepx": {
+      "duration": 360,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "prepz": {
+      "duration": 360,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "measx": {
+      "duration": 320,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "readout"
+   },
+   "measz": {
+      "duration": 320,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "readout"
+   },
+   "measure": {
+      "duration": 320,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "readout"
+   },
+   "i": {
+      "duration": 20,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "x": {
+      "duration": 20,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "y": {
+      "duration": 20,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "z": {
+      "duration": 40,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "h": {
+      "duration": 40,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "s": {
+      "duration": 60,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "sdag": {
+      "duration": 60,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "rx90": {
+      "duration": 20,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "xm90": {
+      "duration": 20,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "ry90": {
+      "duration": 20,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "ym90": {
+      "duration": 20,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "t": {
+      "duration": 60,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "tdag": {
+      "duration": 60,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "x45": {
+      "duration": 20,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "xm45": {
+      "duration": 20,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "ry180": {
+      "duration": 20,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": false,
+      "type": "mw"
+   },
+   "cz": {
+      "duration": 40,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": true,
+      "type": "flux"
+   },
+   "cnot": {
+      "duration": 80,
+      "latency": 0,
+      "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
+      "disable_optimization": true,
+      "type": "flux"
+   }
+   }
+}
