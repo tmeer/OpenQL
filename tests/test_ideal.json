@@ -58,6 +58,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "prepx",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "prepz": {
@@ -65,6 +67,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "prepz",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "measx": {
@@ -72,6 +76,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "measx",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "readout"
    },
    "measz": {
@@ -79,6 +85,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "measz",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "readout"
    },
    "measure": {
@@ -86,6 +94,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "measure",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "readout"
    },
    "i": {
@@ -93,6 +103,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "i",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "x": {
@@ -100,6 +112,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "x",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "y": {
@@ -107,6 +121,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "y",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "z": {
@@ -114,6 +130,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "z",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "h": {
@@ -121,6 +139,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "h",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "s": {
@@ -128,6 +148,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "s",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "sdag": {
@@ -135,6 +157,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "sdag",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "rx90": {
@@ -142,6 +166,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "rx90",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "xm90": {
@@ -149,6 +175,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "xm90",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "ry90": {
@@ -156,6 +184,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "ry90",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "ym90": {
@@ -163,6 +193,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "ym90",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "t": {
@@ -170,6 +202,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "t",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "tdag": {
@@ -177,6 +211,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "tdag",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "x45": {
@@ -184,6 +220,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "x45",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "xm45": {
@@ -191,6 +229,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "xm45",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "ry180": {
@@ -198,6 +238,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": false,
+      "cc_light_instr": "ry180",
+      "cc_light_instr_type": "single_qubit_gate",
       "type": "mw"
    },
    "cz": {
@@ -205,6 +247,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": true,
+      "cc_light_instr": "cz",
+      "cc_light_instr_type": "two_qubit_gate",
       "type": "flux"
    },
    "cnot": {
@@ -212,6 +256,8 @@
       "latency": 0,
       "matrix": [ [0.0,1.0], [1.0,0.0], [1.0,0.0], [0.0,0.0] ],
       "disable_optimization": true,
+      "cc_light_instr": "cnot",
+      "cc_light_instr_type": "two_qubit_gate",
       "type": "flux"
    }
    }
