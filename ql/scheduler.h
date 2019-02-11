@@ -2966,10 +2966,10 @@ private:
     // directly to the resource manager since this function makes the mapper dependent on cc_light
     void GetGateParameters(std::string id, const ql::quantum_platform& platform, std::string& operation_name, std::string& operation_type, std::string& instruction_type)
     {
-        DOUT("... getting gate parameters of " << id);
+        // DOUT("... getting gate parameters of " << id);
         if (platform.instruction_settings.count(id) > 0)
         {
-            DOUT("...... extracting operation_name");
+            // DOUT("...... extracting operation_name");
 	        if ( !platform.instruction_settings[id]["cc_light_instr"].is_null() )
 	        {
 	            operation_name = platform.instruction_settings[id]["cc_light_instr"];
@@ -2977,10 +2977,10 @@ private:
             else
             {
 	            operation_name = id;
-                DOUT("...... faking operation_name to " << operation_name);
+                // DOUT("...... faking operation_name to " << operation_name);
             }
 
-            DOUT("...... extracting operation_type");
+            // DOUT("...... extracting operation_type");
 	        if ( !platform.instruction_settings[id]["type"].is_null() )
 	        {
 	            operation_type = platform.instruction_settings[id]["type"];
@@ -2988,10 +2988,10 @@ private:
             else
             {
 	            operation_type = "cc_light_type";
-                DOUT("...... faking operation_type to " << operation_type);
+                // DOUT("...... faking operation_type to " << operation_type);
             }
 
-            DOUT("...... extracting instruction_type");
+            // DOUT("...... extracting instruction_type");
 	        if ( !platform.instruction_settings[id]["cc_light_instr_type"].is_null() )
 	        {
 	            instruction_type = platform.instruction_settings[id]["cc_light_instr_type"];
@@ -2999,7 +2999,7 @@ private:
             else
             {
 	            instruction_type = "cc_light";
-                DOUT("...... faking instruction_type to " << instruction_type);
+                // DOUT("...... faking instruction_type to " << instruction_type);
             }
         }
         else
@@ -3008,7 +3008,7 @@ private:
             EOUT("Error: platform doesn't support gate '" << id << "'");
             throw ql::exception("[x] Error : platform doesn't support gate!",false);
         }
-        DOUT("... getting gate parameters [done]");
+        // DOUT("... getting gate parameters [done]");
     }
 
     // a gate must wait until all its operand are available, i.e. the gates having computed them have completed,

@@ -25,13 +25,111 @@ namespace arch
 class Depgraph : public Scheduler
 {
 public:
+    void clean_variation( std::list<ListDigraph::Arc>& newarcslist)
+    {
+        for ( auto a : newarcslist)
+        {
+            auto srcNode = graph.source(a);
+            auto tgtNode = graph.target(a);
+            DOUT("...... erasing arc from " << instruction[srcNode]->qasm() << " to " << instruction[tgtNode]->qasm() << " as " << DepTypesNames[depType[a]] << " by q" << cause[a]);
+            graph.erase(a);
+        }
+    }
 
-    void show_deps()
+    void gen_variation(std::list<std::list<ListDigraph::Arc>>& varslist, std::list<ListDigraph::Arc>& newarcslist, int var)
+    {
+        std::list<std::list<ListDigraph::Arc>> recipe_varslist = varslist;  // deepcopy, i.e. must copy each sublist of list as well
+        DOUT("... variation " << var << ":");
+        // DOUT("... recipe_varslist.size()=" << recipe_varslist.size());
+        int list_index = 1;
+        for ( auto subvarslist : recipe_varslist )
+        {
+            // DOUT("... subvarslist index=" << list_index << " subvarslist.size()=" << subvarslist.size());
+            bool prevvalid = false;             // add arc between each pair of nodes so skip 1st arc in subvarslist
+            ListDigraph::Node    prevn = s;     // previous node when prevvalid==true; fake initialization by s
+            for (auto i = subvarslist.size(); i != 0; i--)
+            {
+                auto thisone = var % i;     // gives 0 <= thisone < subvarslist.size()
+                // DOUT("...... var=" << var << " i=" << i << " thisone=var%i=" << thisone << " nextvar=var/i=" << var/i);
+                auto li = subvarslist.begin();
+                std::advance(li, thisone);
+                ListDigraph::Arc a = *li;
+                ListDigraph::Node n  = graph.source(a);
+                DOUT("...... list " << list_index << " sub " << thisone << ": " << instruction[n]->qasm() << " as " << DepTypesNames[depType[a]] << " by q" << cause[a]);
+                if (prevvalid)
+                {
+                    // DOUT("...... adding arc from " << instruction[prevn]->qasm() << " to " << instruction[n]->qasm());
+                    auto newarc = graph.addArc(prevn, n);
+                    weight[newarc] = weight[a];
+                    cause[newarc] = cause[a];
+                    depType[newarc] = (depType[a] == WAR ? RAR : DAD);
+                    DOUT("...... added arc from " << instruction[prevn]->qasm() << " to " << instruction[n]->qasm() << " as " << DepTypesNames[depType[newarc]] << " by q" << cause[newarc]);
+                    newarcslist.push_back(newarc);
+                }
+                prevvalid = true;
+                prevn = n;
+                subvarslist.erase(li);
+                var = var / i;
+            }
+            list_index++;
+        }
+    }
+
+    void add_variations(std::list<ListDigraph::Arc>& arclist, std::list<std::list<ListDigraph::Arc>>& varslist, int& var_count)
+    {
+        while (arclist.size() > 1)
+        {
+            std::list<ListDigraph::Arc> TMParclist = arclist;
+            int  operand = cause[arclist.front()];
+            TMParclist.remove_if([this,operand](ListDigraph::Arc a) { return cause[a] != operand; });
+            if (TMParclist.size() > 1)
+            {
+                // DOUT("At " << instruction[graph.target(TMParclist.front())]->qasm() << " found commuting gates on q" << operand << ":");
+                int perm_index = 0;
+                int perm_count = 1;
+                std::list<ListDigraph::Arc> var;
+                for ( auto a : TMParclist )
+                {
+                    ListDigraph::Node srcNode  = graph.source(a);
+                    // DOUT("... " << instruction[srcNode]->qasm() << " as " << DepTypesNames[depType[a]] << " by q" << cause[a]);
+                    perm_index++;
+                    perm_count *= perm_index;
+                    var.push_back(a);
+                }
+                varslist.push_back(var);
+                var_count *= perm_count;
+            }
+            arclist.remove_if([this,operand](ListDigraph::Arc a) { return cause[a] == operand; });
+        }
+    }
+
+    void print_variations(std::list<std::list<ListDigraph::Arc>>& varslist)
+    {
+        int var_count = 1;
+        for ( auto subvarslist : varslist )
+        {
+            DOUT("Commuting set:");
+            int perm_index = 0;
+            int perm_count = 1;
+            for (auto a : subvarslist)
+            {
+                ListDigraph::Node srcNode  = graph.source(a);
+                DOUT("... " << instruction[srcNode]->qasm() << " as " << DepTypesNames[depType[a]] << " by q" << cause[a]);
+                perm_index++;
+                perm_count *= perm_index;
+            }
+            DOUT("Giving rise to " << perm_count << " variations");
+            var_count *= perm_count;
+        }
+        DOUT("Total " << var_count << " variations");
+    }
+
+    void find_variations(std::list<std::list<ListDigraph::Arc>>& varslist, int& total)
     {
         InDegMap<ListDigraph> inDeg(graph);
         for (ListDigraph::NodeIt n(graph); n != INVALID; ++n)
         {
-            DOUT("Incoming unfiltered dependences of node " << ": " << instruction[n]->qasm() << " :");
+            // DOUT("Incoming unfiltered dependences of node " << ": " << instruction[n]->qasm() << " :");
             std::list<ListDigraph::Arc> Rarclist;
             std::list<ListDigraph::Arc> Darclist;
             for( ListDigraph::InArcIt arc(graph,n); arc != INVALID; ++arc )
@@ -43,7 +141,7 @@ public:
                 ) {
                     continue;
                 }
-                DOUT("... Encountering relevant " << DepTypesNames[depType[arc]] << " by q" << cause[arc] << " from " << instruction[srcNode]->qasm());
+                // DOUT("... Encountering relevant " << DepTypesNames[depType[arc]] << " by q" << cause[arc] << " from " << instruction[srcNode]->qasm());
                 if (depType[arc] == WAR
                 ||  depType[arc] == DAR
                 ) {
@@ -56,38 +154,8 @@ public:
                     Darclist.push_back(arc);
                 }
             }
-            while (Rarclist.size() > 1)
-            {
-                std::list<ListDigraph::Arc> TMParclist = Rarclist;
-                int  operand = cause[Rarclist.front()];
-                TMParclist.remove_if([this,operand](ListDigraph::Arc a) { return cause[a] != operand; });
-                if (TMParclist.size() > 1)
-                {
-                    DOUT("At " << instruction[n]->qasm() << " found commuting gates on q" << operand << ":");
-                    for ( auto a : TMParclist )
-                    {
-                        ListDigraph::Node srcNode  = graph.source(a);
-                        DOUT("... " << instruction[srcNode]->qasm() << " as " << DepTypesNames[depType[a]] << " by q" << cause[a]);
-                    }
-                }
-                Rarclist.remove_if([this,operand](ListDigraph::Arc a) { return cause[a] == operand; });
-            }
-            while (Darclist.size() > 1)
-            {
-                std::list<ListDigraph::Arc> TMParclist = Darclist;
-                int  operand = cause[Darclist.front()];
-                TMParclist.remove_if([this,operand](ListDigraph::Arc a) { return cause[a] != operand; });
-                if (TMParclist.size() > 1)
-                {
-                    DOUT("At " << instruction[n]->qasm() << " found commuting gates on q" << operand << ":");
-                    for ( auto a : TMParclist )
-                    {
-                        ListDigraph::Node srcNode  = graph.source(a);
-                        DOUT("... " << instruction[srcNode]->qasm() << " as " << DepTypesNames[depType[a]] << " by q" << cause[a]);
-                    }
-                }
-                Darclist.remove_if([this,operand](ListDigraph::Arc a) { return cause[a] == operand; });
-            }
+            add_variations(Rarclist, varslist, total);
+            add_variations(Darclist, varslist, total);
         }
     }
 
@@ -126,7 +194,7 @@ private:
     {
 	    std::stringstream ss_output_file;
 	    ss_output_file << ql::options::get("output_dir") << "/" << kernel.name << "_" << perm << ".qasm";
-	    DOUT("writing permutation to '" << ss_output_file.str() << "' ...");
+	    DOUT("... writing variation to '" << ss_output_file.str() << "' ...");
 	    std::stringstream ss_qasm;
 	    ss_qasm << "." << kernel.name << "_" << perm << '\n';
 	    ql::circuit& ckt = kernel.c;
@@ -137,7 +205,7 @@ private:
 	        ss_qasm << '\n';
 	    }
 	    size_t  depth = ckt.back()->cycle + std::ceil( static_cast<float>(ckt.back()->duration) / cycle_time) - ckt.front()->cycle;
-	    ss_qasm <<  "# depth=" << depth;
+	    ss_qasm <<  "# Depth=" << depth << '\n';
 	    ql::utils::write_file(ss_output_file.str(), ss_qasm.str());
 	}
 
@@ -162,7 +230,7 @@ private:
         return direction;
     }
 
-	void generate_permutations(quantum_kernel& kernel,
+	void generate_variations(quantum_kernel& kernel,
 	    const ql::quantum_platform & platform, size_t nqubits, size_t ncreg = 0)
 	{
 	    DOUT("Generate commutable variations of kernel circuit ...");
@@ -173,25 +241,47 @@ private:
 	        return;
 	    }
 
-	    resource_manager_t rm(platform, get_direction());
 	    Depgraph sched;
 	    sched.Init(ckt, platform, nqubits, ncreg);
 	
-	    // have a dependence graph
-        sched.show_deps();
+	    // find the sets of sets of commutable nodes and store these in the varslist
+        //
+        // each set of commutable node in principle gives rise to a full set of permutations (variations)
+        // multiple sets of such give rise to the multiplication of those permutations
+        // the total number of such variations is computed as well to prepare for a goedelization of the variations
+        //
+        // varslist is implemented as a list of lists of arcs from gates that commute
+        // arcs instead of nodes are stored because arc also contains deptype[] and cause[] next to its source node
+        DOUT("Finding sets of commutable gates ...");
+        std::list<std::list<ListDigraph::Arc>> varslist;
+        int total = 1;
+        sched.find_variations(varslist, total);
+        sched.print_variations(varslist);
 
-	    // find the commutable sets of nodes
-	    // convert each to permutations and combine those
-	    int perm = 0;
-	    // for each permutation:
-	    //  - generate additional dependences
-	    //  - check dag, if not, continue
-	    //  - schedule
-	    sched.do_schedule(rm, platform);
-	    //  - print
-	    print(kernel, perm);
-	    //  - remove additional dependences
-        //  ...
+        DOUT("Start generating " << total << " variations ...");
+        DOUT("=========================\n\n");
+        for (int perm = 0; perm < total; perm++)
+        {
+            std::list<ListDigraph::Arc> newarcslist;        // new deps generated
+	        // generate additional dependences for this variation
+            sched.gen_variation(varslist, newarcslist, perm);
+            if ( !dag(sched.graph))
+            {
+                // there are cycles among the dependences so this variation is infeasible
+                DOUT("... variation " << perm << " results in a dependence cycle, skip it");
+            }
+            else
+            {
+	            DOUT("... schedule variation " << perm);
+		        resource_manager_t rm(platform, get_direction());
+		        sched.do_schedule(rm, platform);
+	            DOUT("... generating qasm code for this variation " << perm);
+		        print(kernel, perm);
+            }
+            sched.clean_variation(newarcslist);
+            DOUT("... ready with variation " << perm);
+            DOUT("=========================\n");
+        }
 	    
 	    DOUT("Generate commutable variations of kernel circuit [Done]");
     }
@@ -199,7 +289,7 @@ private:
     // kernel level compilation
     void compile(std::string prog_name, std::vector<quantum_kernel> kernels, const ql::quantum_platform& platform)
     {
-        DOUT("Compiling " << kernels.size() << " kernels to generate commuting permutations ... ");
+        DOUT("Compiling " << kernels.size() << " kernels to generate commuting variations ... ");
 
         load_hw_settings(platform);
 
@@ -207,7 +297,7 @@ private:
         {
             IOUT("Compiling kernel: " << kernel.name);
             auto num_creg = kernel.creg_count;
-            generate_permutations(kernel, platform, num_qubits, num_creg);
+            generate_variations(kernel, platform, num_qubits, num_creg);
         }
 
         DOUT("Compiling Ideal eQASM [Done]");
