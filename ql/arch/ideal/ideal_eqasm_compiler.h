@@ -25,6 +25,7 @@ namespace arch
 class Depgraph : public Scheduler
 {
 public:
+    // after scheduling, delete the added arcs (RAR/DAD) from the depgraph to restore it to the original state
     void clean_variation( std::list<ListDigraph::Arc>& newarcslist)
     {
         for ( auto a : newarcslist)
@@ -36,6 +37,9 @@ public:
         }
     }
 
+    // make this variation effective by generating a sequentialization for the nodes in each subvarslist
+    // the sequentialization is done by adding RAR/DAD dependences; those are kept for removal again from the depgraph after scheduling
+    // the original varslist is copied locally to a recipe_varslist that is gradually reduced to empty while generating
     void gen_variation(std::list<std::list<ListDigraph::Arc>>& varslist, std::list<ListDigraph::Arc>& newarcslist, int var)
     {
         std::list<std::list<ListDigraph::Arc>> recipe_varslist = varslist;  // deepcopy, i.e. must copy each sublist of list as well
@@ -53,7 +57,7 @@ public:
                 // DOUT("...... var=" << var << " i=" << i << " thisone=var%i=" << thisone << " nextvar=var/i=" << var/i);
                 auto li = subvarslist.begin();
                 std::advance(li, thisone);
-                ListDigraph::Arc a = *li;
+                ListDigraph::Arc a = *li;   // i.e. select the thisone's element in this subvarslist
                 ListDigraph::Node n  = graph.source(a);
                 DOUT("...... list " << list_index << " sub " << thisone << ": " << instruction[n]->qasm() << " as " << DepTypesNames[depType[a]] << " by q" << cause[a]);
                 if (prevvalid)
@@ -68,13 +72,18 @@ public:
                 }
                 prevvalid = true;
                 prevn = n;
-                subvarslist.erase(li);
-                var = var / i;
+                subvarslist.erase(li);      // take thisone's element out of the subvarslist, reducing it to list one element shorter
+                var = var / i;              // take out the current subvarslist.size() out of the encoding
             }
             list_index++;
         }
     }
 
+    // each incoming dependence need not be caused by the same qubit, split those in separate sets
+    // at the same time, compute the size of the resulting sets and from that the number of variations it results in
+    // the running total (var_count) is multiplied by each of these resulting numbers to give the total number of variations
+    // the individual sets are added as separate lists to varlist, which is a list of those individual sets
+    // the individual sets are implemented as lists and are called subvarlists above
     void add_variations(std::list<ListDigraph::Arc>& arclist, std::list<std::list<ListDigraph::Arc>>& varslist, int& var_count)
     {
         while (arclist.size() > 1)
@@ -124,9 +133,11 @@ public:
         DOUT("Total " << var_count << " variations");
     }
 
+    // for each node scan all incoming dependences
+    // - when WAR/DAR then we have commutation on a Read operand (1st operand of CNOT, both operands of CZ)
+    // - when WAD/RAD then we have commutation on a D operand (2nd operand of CNOT)
     void find_variations(std::list<std::list<ListDigraph::Arc>>& varslist, int& total)
     {
-        InDegMap<ListDigraph> inDeg(graph);
         for (ListDigraph::NodeIt n(graph); n != INVALID; ++n)
         {
             // DOUT("Incoming unfiltered dependences of node " << ": " << instruction[n]->qasm() << " :");
@@ -246,12 +257,13 @@ private:
 	
 	    // find the sets of sets of commutable nodes and store these in the varslist
         //
-        // each set of commutable node in principle gives rise to a full set of permutations (variations)
+        // each set of commutable nodes in principle gives rise to a full set of permutations (variations)
         // multiple sets of such give rise to the multiplication of those permutations
         // the total number of such variations is computed as well to prepare for a goedelization of the variations
         //
         // varslist is implemented as a list of lists of arcs from gates that commute
         // arcs instead of nodes are stored because arc also contains deptype[] and cause[] next to its source node
+        // i.e. each kept arc is from one of the commuting gates to their common depending successor
         DOUT("Finding sets of commutable gates ...");
         std::list<std::list<ListDigraph::Arc>> varslist;
         int total = 1;
@@ -263,7 +275,7 @@ private:
         for (int perm = 0; perm < total; perm++)
         {
             std::list<ListDigraph::Arc> newarcslist;        // new deps generated
-	        // generate additional dependences for this variation
+	        // generate additional (RAR or DAD) dependences to sequentialize this variation
             sched.gen_variation(varslist, newarcslist, perm);
             if ( !dag(sched.graph))
             {
@@ -273,11 +285,12 @@ private:
             else
             {
 	            DOUT("... schedule variation " << perm);
-		        resource_manager_t rm(platform, get_direction());
-		        sched.do_schedule(rm, platform);
+		        resource_manager_t rm(platform, get_direction());   // each qubit only busy in one gate
+		        sched.do_schedule(rm, platform);                    // ALAP with above single constraint
 	            DOUT("... generating qasm code for this variation " << perm);
 		        print(kernel, perm);
             }
+            // delete additional dependences generated so restore old depgraph with all commutation
             sched.clean_variation(newarcslist);
             DOUT("... ready with variation " << perm);
             DOUT("=========================\n");

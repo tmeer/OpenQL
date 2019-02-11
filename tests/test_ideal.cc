@@ -283,7 +283,7 @@ int main(int argc, char ** argv)
 {
     ql::utils::logger::set_log_level("LOG_DEBUG");
     ql::options::set("scheduler_uniform", "no");
-    ql::options::set("scheduler", "ASAP");
+    ql::options::set("scheduler", "ALAP");
     ql::options::set("scheduler_post179", "yes");
 
 //  test_cnot_controlcommute("cnot_controlcommute");
