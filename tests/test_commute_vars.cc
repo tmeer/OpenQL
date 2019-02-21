@@ -199,22 +199,22 @@ test_manyNN(std::string v)
     for (int j=0; j<7; j++) { k.gate("x", j); }
 
     // a list of all cnots that are ok in trivial mapping
-//  k.gate("cnot", 0,2);
-//  k.gate("cnot", 0,3);
-//  k.gate("cnot", 1,3);
-//  k.gate("cnot", 1,4);
-//  k.gate("cnot", 2,0);
-//  k.gate("cnot", 2,5);
-//  k.gate("cnot", 3,0);
-//  k.gate("cnot", 3,1);
-//  k.gate("cnot", 3,5);
-//  k.gate("cnot", 3,6);
-//  k.gate("cnot", 4,1);
-//  k.gate("cnot", 4,6);
-//  k.gate("cnot", 5,2);
-//  k.gate("cnot", 5,3);
-//  k.gate("cnot", 6,3);
-//  k.gate("cnot", 6,4);
+    k.gate("cnot", 0,2);
+    k.gate("cnot", 0,3);
+    k.gate("cnot", 1,3);
+    k.gate("cnot", 1,4);
+    k.gate("cnot", 2,0);
+    k.gate("cnot", 2,5);
+    k.gate("cnot", 3,0);
+    k.gate("cnot", 3,1);
+    k.gate("cnot", 3,5);
+    k.gate("cnot", 3,6);
+    k.gate("cnot", 4,1);
+    k.gate("cnot", 4,6);
+    k.gate("cnot", 5,2);
+    k.gate("cnot", 5,3);
+    k.gate("cnot", 6,3);
+    k.gate("cnot", 6,4);
 
     for (int j=0; j<7; j++) { k.gate("x", j); }
 
@@ -300,10 +300,10 @@ int main(int argc, char ** argv)
     ql::options::set("scheduler", "ALAP");
     ql::options::set("scheduler_post179", "yes");
 
-//  test_cnot_controlcommute("cnot_controlcommute");
-//  test_cnot_targetcommute("cnot_targetcommute");
-//  test_cz_anycommute("cz_anycommute");
-//  test_steaneqec("steaneqec");
+    test_cnot_controlcommute("cnot_controlcommute");
+    test_cnot_targetcommute("cnot_targetcommute");
+    test_cz_anycommute("cz_anycommute");
+    test_steaneqec("steaneqec");
     test_steane17qec1("steane17qec1");
     test_steane17qec2("steane17qec2");
 //  test_manyNN("manyNN");

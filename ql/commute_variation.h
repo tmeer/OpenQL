@@ -104,18 +104,38 @@ public:
     {
         for ( auto a : newarcslist)
         {
-            auto srcNode = graph.source(a);
-            auto tgtNode = graph.target(a);
-            DOUT("...... erasing arc from " << instruction[srcNode]->qasm() << " to " << instruction[tgtNode]->qasm() << " as " << DepTypesNames[depType[a]] << " by q" << cause[a]);
+            // DOUT("...... erasing arc from " << instruction[graph.source(a)]->qasm() << " to " << instruction[graph.target(a)]->qasm() << " as " << DepTypesNames[depType[a]] << " by q" << cause[a]);
             graph.erase(a);
         }
         newarcslist.clear();
     }
 
-    // replace kernel.c by circuit represented by this variation
-    void set_circuit_from_variation(quantum_kernel& kernel, vc_t varno)
+    // return encoding string of variation var for debugging output
+    std::string varstring(std::list<std::list<ListDigraph::Arc>>& varslist, vc_t var)
     {
-	}
+        std::ostringstream ss;
+
+        int varslist_index = 1;
+        for ( auto subvarslist : varslist )
+        {
+            if (varslist_index != 1)
+            {
+                ss << "|";
+            }
+            for (auto svs = subvarslist.size(); svs != 0; svs--)
+            {
+                if (svs != subvarslist.size())
+                {
+                    ss << "-";
+                }
+                auto thisone = var % svs;
+                ss << thisone;
+                var = var / svs;
+            }
+            varslist_index++;
+        }
+        return ss.str();
+    }
 
     // make this variation effective by generating a sequentialization for the nodes in each subvarslist
     // the sequentialization is done by adding RAR/DAD dependences to the dependence graph;
@@ -124,7 +144,7 @@ public:
     void gen_variation(std::list<std::list<ListDigraph::Arc>>& varslist, std::list<ListDigraph::Arc>& newarcslist, vc_t var)
     {
         std::list<std::list<ListDigraph::Arc>> recipe_varslist = varslist;  // deepcopy, i.e. must copy each sublist of list as well
-        DOUT("... variation " << var << ":");
+        DOUT("... variation " << var << " (" << varstring(varslist,var) << "):");
         // DOUT("... recipe_varslist.size()=" << recipe_varslist.size());
         int varslist_index = 1;
         for ( auto subvarslist : recipe_varslist )
@@ -140,7 +160,7 @@ public:
                 std::advance(li, thisone);
                 ListDigraph::Arc a = *li;   // i.e. select the thisone's element in this subvarslist
                 ListDigraph::Node n  = graph.source(a);
-                DOUT("...... list " << varslist_index << " sub " << thisone << ": " << instruction[n]->qasm() << " as " << DepTypesNames[depType[a]] << " by q" << cause[a]);
+                // DOUT("...... set " << varslist_index << " take " << thisone << ": " << instruction[n]->qasm() << " as " << DepTypesNames[depType[a]] << " by q" << cause[a]);
                 if (prevvalid)
                 {
                     // DOUT("...... adding arc from " << instruction[prevn]->qasm() << " to " << instruction[n]->qasm());
@@ -148,7 +168,7 @@ public:
                     weight[newarc] = weight[a];
                     cause[newarc] = cause[a];
                     depType[newarc] = (depType[a] == WAR ? RAR : DAD);
-                    DOUT("...... added arc from " << instruction[prevn]->qasm() << " to " << instruction[n]->qasm() << " as " << DepTypesNames[depType[newarc]] << " by q" << cause[newarc]);
+                    // DOUT("...... added arc from " << instruction[prevn]->qasm() << " to " << instruction[n]->qasm() << " as " << DepTypesNames[depType[newarc]] << " by q" << cause[newarc]);
                     newarcslist.push_back(newarc);
                 }
                 prevvalid = true;
@@ -193,12 +213,14 @@ public:
         }
     }
 
+    // show the sets of commutable gates for debugging
     void show_sets(std::list<std::list<ListDigraph::Arc>>& varslist)
     {
         vc_t var_count = 1;
+        auto list_index = 1;
         for ( auto subvarslist : varslist )
         {
-            DOUT("Commuting set:");
+            DOUT("Commuting set " << list_index << ":");
             int perm_index = 0;
             vc_t perm_count = 1;
             for (auto a : subvarslist)
@@ -210,6 +232,7 @@ public:
             }
             DOUT("Giving rise to " << perm_count << " variations");
             var_count *= perm_count;
+            list_index++;
         }
         DOUT("Total " << var_count << " variations");
     }
@@ -251,23 +274,26 @@ public:
         }
     }
 
-    size_t do_schedule(resource_manager_t& rm, const ql::quantum_platform& platform)
+    // schedule the constructed depgraph for the platform with resource constraints and return the resulting depth
+    size_t schedule_rc(const ql::quantum_platform& platform)
     {
-	    std::string schedopt = ql::options::get("scheduler");
+        std::string schedopt = ql::options::get("scheduler");
         ql::ir::bundles_t   bundles;
-	    if ("ASAP" == schedopt)
-	    {
-	        bundles = schedule_asap(rm, platform);
-	    }
-	    else if ("ALAP" == schedopt)
-	    {
-	        bundles = schedule_alap(rm, platform);
-	    }
-	    else
-	    {
-	        EOUT("Unknown scheduler");
-	        throw ql::exception("Unknown scheduler!", false);
-	    }
+        if ("ASAP" == schedopt)
+        {
+            resource_manager_t rm(platform, forward_scheduling);
+            bundles = schedule_asap(rm, platform);
+        }
+        else if ("ALAP" == schedopt)
+        {
+            resource_manager_t rm(platform, backward_scheduling);
+            bundles = schedule_alap(rm, platform);
+        }
+        else
+        {
+            EOUT("Unknown scheduler");
+            throw ql::exception("Unknown scheduler!", false);
+        }
         size_t depth = bundles.back().start_cycle + bundles.back().duration_in_cycles - bundles.front().start_cycle;
         return depth;
     }
@@ -283,33 +309,33 @@ private:
     // note that the scheduler has reordered the circuit's gates according to their assigned cycle value
     void print(quantum_kernel& kernel, vc_t varno)
     {
-	    std::stringstream ss_output_file;
-	    ss_output_file << ql::options::get("output_dir") << "/" << kernel.name << "_" << varno << ".qasm";
-	    DOUT("... writing variation to '" << ss_output_file.str() << "' ...");
-	    std::stringstream ss_qasm;
-	    ss_qasm << "." << kernel.name << "_" << varno << '\n';
-	    ql::circuit& ckt = kernel.c;
-	    for (auto gp : ckt)
-	    {
-	        ss_qasm << '\t' << gp->qasm();
-	        // ss_qasm << "\t# " << gp->cycle
-	        ss_qasm << '\n';
-	    }
-	    size_t  depth = ckt.back()->cycle + std::ceil( static_cast<float>(ckt.back()->duration) / kernel.cycle_time) - ckt.front()->cycle;
-	    ss_qasm <<  "# Depth=" << depth << '\n';
-	    ql::utils::write_file(ss_output_file.str(), ss_qasm.str());
-	}
+        std::stringstream ss_output_file;
+        ss_output_file << ql::options::get("output_dir") << "/" << kernel.name << "_" << varno << ".qasm";
+        DOUT("... writing variation to '" << ss_output_file.str() << "' ...");
+        std::stringstream ss_qasm;
+        ss_qasm << "." << kernel.name << "_" << varno << '\n';
+        ql::circuit& ckt = kernel.c;
+        for (auto gp : ckt)
+        {
+            ss_qasm << '\t' << gp->qasm();
+            // ss_qasm << "\t# " << gp->cycle
+            ss_qasm << '\n';
+        }
+        size_t  depth = ckt.back()->cycle + std::ceil( static_cast<float>(ckt.back()->duration) / kernel.cycle_time) - ckt.front()->cycle;
+        ss_qasm <<  "# Depth=" << depth << '\n';
+        ql::utils::write_file(ss_output_file.str(), ss_qasm.str());
+    }
 
 public:
-	void generate(quantum_kernel& kernel, const ql::quantum_platform & platform, size_t nqubits, size_t ncreg = 0)
-	{
-	    DOUT("Generate commutable variations of kernel circuit ...");
-	    ql::circuit& ckt = kernel.c;
-	    if (ckt.empty())
-	    {
-	        DOUT("Empty kernel " << kernel.name);
-	        return;
-	    }
+    void generate(quantum_kernel& kernel, const ql::quantum_platform & platform, size_t nqubits, size_t ncreg = 0)
+    {
+        DOUT("Generate commutable variations of kernel circuit ...");
+        ql::circuit& ckt = kernel.c;
+        if (ckt.empty())
+        {
+            DOUT("Empty kernel " << kernel.name);
+            return;
+        }
         if (ql::options::get("scheduler_commute") == "no")
         {
             COUT("Scheduler_commute option is \"no\": don't generate commutation variations");
@@ -318,14 +344,18 @@ public:
         }
 
         DOUT("Create a dependence graph and recognize commutation");
-	    Depgraph sched;
-	    sched.Init(ckt, platform, nqubits, ncreg);
-	
+        Depgraph sched;
+        sched.Init(ckt, platform, nqubits, ncreg);
+    
         DOUT("Finding sets of commutable gates ...");
         std::list<std::list<ListDigraph::Arc>> varslist;
         vc_t total = 1;
         sched.find_variations(varslist, total);
         sched.show_sets(varslist);
+
+        // Find out which depth heuristics would find");
+        auto hdepth = sched.schedule_rc(platform);
+        DOUT("Heuristics would find depth " << hdepth);
 
         DOUT("Start enumerating " << total << " variations ...");
         DOUT("=========================\n\n");
@@ -335,32 +365,36 @@ public:
 
         for (vc_t varno = 0; varno < total; varno++)
         {
-	        // generate additional (RAR or DAD) dependences to sequentialize this variation
+            // generate additional (RAR or DAD) dependences to sequentialize this variation
             sched.gen_variation(varslist, newarcslist, varno);
             if ( !dag(sched.graph))
             {
                 // there are cycles among the dependences so this variation is infeasible
-                DOUT("... variation " << varno << " results in a dependence cycle, skip it");
+                DOUT("... variation " << varno << " (" << sched.varstring(varslist,varno) << ") results in a dependence cycle, skip it");
             }
             else
             {
-	            DOUT("... schedule variation " << varno);
-		        resource_manager_t rm(platform,
-                    (ql::options::get("scheduler")=="ASAP" ? forward_scheduling : backward_scheduling));
-		        auto depth = sched.do_schedule(rm, platform);
+                // DOUT("... schedule variation " << varno << " (" << sched.varstring(varslist,varno) << ")");
+                auto depth = sched.schedule_rc(platform);
                 vars_per_depth[depth].push_back(varno);
+                DOUT("... scheduled variation " << varno << " (" << sched.varstring(varslist,varno) << "), depth=" << depth);
 
-	            DOUT("... printing qasm code for this variation " << varno);
-		        print(kernel, varno);
+                // DOUT("... printing qasm code for this variation " << varno << " (" << sched.varstring(varslist,varno) << ")");
+                // print(kernel, varno);
             }
             // delete additional dependences generated so restore old depgraph with all commutation
             sched.clean_variation(newarcslist);
-            DOUT("... ready with variation " << varno);
-            DOUT("=========================\n");
+            // DOUT("... ready with variation " << varno << " (" << sched.varstring(varslist,varno) << ")");
+            // DOUT("=========================\n");
         }
-	    DOUT("Generate commutable variations of kernel circuit [Done]");
+        DOUT("Generate commutable variations of kernel circuit [Done]");
 
         DOUT("Find circuit with minimum depth while exploiting commutation");
+        for (auto vit = vars_per_depth.begin(); vit != vars_per_depth.end(); ++vit)
+        {
+            DOUT("... depth " << vit->first << ": " << vit->second.size() << " variations");
+        }
+        DOUT("Note that heuristics would have found depth " << hdepth);
         auto mit = vars_per_depth.begin();
         auto min_depth = mit->first;
         auto vars = mit->second;
@@ -369,9 +403,7 @@ public:
 
         // Set kernel.c representing result variation by generating it and scheduling it again ...
         sched.gen_variation(varslist, newarcslist, result_varno);
-        resource_manager_t rm(platform,
-                    (ql::options::get("scheduler")=="ASAP" ? forward_scheduling : backward_scheduling));
-        (void) sched.do_schedule(rm, platform); // sets kernel.c reflecting the additional deps of the variation
+        (void) sched.schedule_rc(platform); // sets kernel.c reflecting the additional deps of the variation
         sched.clean_variation(newarcslist);
         DOUT("Find circuit with minimum depth while exploiting commutation [Done]");
 

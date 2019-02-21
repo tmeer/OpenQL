@@ -18,7 +18,7 @@
 #include <ql/arch/cc_light/cc_light_eqasm.h>
 #include <ql/arch/cc_light/cc_light_scheduler.h>
 
-// comment next line and call to generate_commutation_variations out to omit it from compiler
+// comment next line out and call to cv.generate out to omit it from compiler
 #include <ql/commute_variation.h>
 
 // eqasm code : set of cc_light_eqasm instructions
