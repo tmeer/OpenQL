@@ -1,97 +1,65 @@
 {
-   "eqasm_compiler" : "ideal_compiler",
+   "eqasm_compiler" : "cc_light_compiler",
 
    "hardware_settings": {
-	 "qubit_number": 17,
-	 "cycle_time" : 20
+     "qubit_number": 7,
+     "cycle_time" : 20,
+     "mw_mw_buffer": 0,
+     "mw_flux_buffer": 0,
+     "mw_readout_buffer": 0,
+     "flux_mw_buffer": 0,
+     "flux_flux_buffer": 0,
+     "flux_readout_buffer": 0,
+     "readout_mw_buffer": 0,
+     "readout_flux_buffer": 0,
+     "readout_readout_buffer": 0
    },
 
-   "resources":
-   {
-	"qubits":
-	{
-	    "description": "Each qubit can be used by only one gate at a time. There are 'count' qubits.",
-	    "count": 17
-	}
-   },
+  "resources" : 
+  {
+    "qubits":
+    {
+        "description": "Each qubit can be used by only one gate at a time. There are 'count' qubits.",
+        "count": 7
+    }
+  }, 
 
-   "topology" : 
-   {
-	"description": "A qubit grid is rectangular. The coordinates in the X direction are 0 to x_size-1. In the Y direction they are 0 to y_size-1. In the grid real qubits are placed. Each qubit has an id (its index, used above in the resource descriptions, and used below as operands to gates), an x and a y coordinate. Qubits are connected in directed pairs, called edges. Each edge has an id (its index, used above in the resource descriptions), a source qubit and a destination qubit.",
-	"x_size": 7,
-	"y_size": 7,
-	"qubits": 
-	[ 
-	    { "id": 0,  "x": 4, "y": 6 },
-	    { "id": 1,  "x": 1, "y": 5 },
-	    { "id": 2,  "x": 3, "y": 5 },
-	    { "id": 3,  "x": 5, "y": 5 },
-	    { "id": 4,  "x": 0, "y": 4 },
-	    { "id": 5,  "x": 2, "y": 4 },
-	    { "id": 6,  "x": 4, "y": 4 },
-	    { "id": 7,  "x": 1, "y": 3 },
-	    { "id": 8,  "x": 3, "y": 3 },
-	    { "id": 9,  "x": 5, "y": 3 },
-	    { "id": 10,  "x": 2, "y": 2 },
-	    { "id": 11,  "x": 4, "y": 2 },
-	    { "id": 12,  "x": 6, "y": 2 },
-	    { "id": 13,  "x": 1, "y": 1 },
-	    { "id": 14,  "x": 3, "y": 1 },
-	    { "id": 15,  "x": 5, "y": 1 },
-	    { "id": 16,  "x": 2, "y": 0 }
-	],
-	"edges": 
-	[
-	    { "id": 0,  "src": 2, "dst": 0 },
-	    { "id": 1,  "src": 0, "dst": 3 },
-	    { "id": 2,  "src": 4, "dst": 1 },
-	    { "id": 3,  "src": 1, "dst": 5 },
-	    { "id": 4,  "src": 5, "dst": 2 },
-	    { "id": 5,  "src": 2, "dst": 6 },
-	    { "id": 6,  "src": 6, "dst": 3 },
-	    { "id": 7,  "src": 4, "dst": 7 },
-	    { "id": 8,  "src": 7, "dst": 5 },
-	    { "id": 9,  "src": 5, "dst": 8 },
-	    { "id": 10,  "src": 8, "dst": 6 },
-	    { "id": 11,  "src": 6, "dst": 9 },
-	    { "id": 12,  "src": 7, "dst": 10 },
-	    { "id": 13,  "src": 10, "dst": 8 },
-	    { "id": 14,  "src": 8, "dst": 11 },
-	    { "id": 15,  "src": 11, "dst": 9 },
-	    { "id": 16,  "src": 9, "dst": 12 },
-	    { "id": 17,  "src": 13, "dst": 10 },
-	    { "id": 18,  "src": 10, "dst": 14 },
-	    { "id": 19,  "src": 14, "dst": 11 },
-	    { "id": 20,  "src": 11, "dst": 15 },
-	    { "id": 21,  "src": 15, "dst": 12 },
-	    { "id": 22,  "src": 13, "dst": 16 },
-	    { "id": 23,  "src": 16, "dst": 14 },
-	    { "id": 24,  "src": 0, "dst": 2 },
-	    { "id": 25,  "src": 3, "dst": 0 },
-	    { "id": 26,  "src": 1, "dst": 4 },
-	    { "id": 27,  "src": 5, "dst": 1 },
-	    { "id": 28,  "src": 2, "dst": 5 },
-	    { "id": 29,  "src": 6, "dst": 2 },
-	    { "id": 30,  "src": 3, "dst": 6 },
-	    { "id": 31,  "src": 7, "dst": 4 },
-	    { "id": 32,  "src": 5, "dst": 7 },
-	    { "id": 33,  "src": 8, "dst": 5 },
-	    { "id": 34,  "src": 6, "dst": 8 },
-	    { "id": 35,  "src": 9, "dst": 6 },
-	    { "id": 36,  "src": 10, "dst": 7 },
-	    { "id": 37,  "src": 8, "dst": 10 },
-	    { "id": 38,  "src": 11, "dst": 8 },
-	    { "id": 39,  "src": 9, "dst": 11 },
-	    { "id": 40,  "src": 12, "dst": 9 },
-	    { "id": 41,  "src": 10, "dst": 13 },
-	    { "id": 42,  "src": 14, "dst": 10 },
-	    { "id": 43,  "src": 11, "dst": 14 },
-	    { "id": 44,  "src": 15, "dst": 11 },
-	    { "id": 45,  "src": 12, "dst": 15 },
-	    { "id": 46,  "src": 16, "dst": 13 },
-	    { "id": 47,  "src": 14, "dst": 16 }
-	]
-   },
+  "topology" : 
+  {
+    "description": "A qubit grid is rectangular. The coordinates in the X direction are 0 to x_size-1. In the Y direction they are 0 to y_size-1. In the grid real qubits are placed. Each qubit has an id (its index, used above in the resource descriptions, and used below as operands to gates), an x and a y coordinate. Qubits are connected in directed pairs, called edges. Each edge has an id (its index, used above in the resource descriptions), a source qubit and a destination qubit.",
+    "x_size": 5,
+    "y_size": 3,
+    "qubits": 
+    [ 
+      { "id": 0,  "x": 1, "y": 2 },
+      { "id": 1,  "x": 3, "y": 2 },
+      { "id": 2,  "x": 0, "y": 1 },
+      { "id": 3,  "x": 2, "y": 1 },
+      { "id": 4,  "x": 4, "y": 1 },
+      { "id": 5,  "x": 1, "y": 0 },
+      { "id": 6,  "x": 3, "y": 0 }
+    ],
+    "edges": 
+    [
+      { "id": 0,  "src": 2, "dst": 0 },
+      { "id": 1,  "src": 0, "dst": 3 },
+      { "id": 2,  "src": 3, "dst": 1 },
+      { "id": 3,  "src": 1, "dst": 4 },
+      { "id": 4,  "src": 2, "dst": 5 },
+      { "id": 5,  "src": 5, "dst": 3 },
+      { "id": 6,  "src": 3, "dst": 6 },
+      { "id": 7,  "src": 6, "dst": 4 },
+      { "id": 8,  "src": 0, "dst": 2 },
+      { "id": 9,  "src": 3, "dst": 0 },
+      { "id": 10,  "src": 1, "dst": 3 },
+      { "id": 11,  "src": 4, "dst": 1 },
+      { "id": 12,  "src": 5, "dst": 2 },
+      { "id": 13,  "src": 3, "dst": 5 },
+      { "id": 14,  "src": 6, "dst": 3 },
+      { "id": 15,  "src": 4, "dst": 6 }
+
+    ]
+  },
 
    "instructions": {
    "prepx": {

@@ -20,11 +20,13 @@ test_cnot_controlcommute(std::string v)
     std::string kernel_name = "test_" + v;
     float sweep_points[] = { 1 };
 
-    ql::quantum_platform starmon("starmon", "test_ideal.json");
+    ql::quantum_platform starmon("starmon", "test_commute_vars_7.json");
     ql::set_platform(starmon);
     ql::quantum_program prog(prog_name, starmon, n, 0);
     ql::quantum_kernel k(kernel_name, starmon, n, 0);
     prog.set_sweep_points(sweep_points, sizeof(sweep_points)/sizeof(float));
+
+    ql::options::set("scheduler_commute", "yes");
 
     // for (int j=0; j<7; j++) { k.gate("x", j); }
 
@@ -62,11 +64,13 @@ test_cnot_targetcommute(std::string v)
     std::string kernel_name = "test_" + v;
     float sweep_points[] = { 1 };
 
-    ql::quantum_platform starmon("starmon", "test_ideal.json");
+    ql::quantum_platform starmon("starmon", "test_commute_vars_7.json");
     ql::set_platform(starmon);
     ql::quantum_program prog(prog_name, starmon, n, 0);
     ql::quantum_kernel k(kernel_name, starmon, n, 0);
     prog.set_sweep_points(sweep_points, sizeof(sweep_points)/sizeof(float));
+
+    ql::options::set("scheduler_commute", "yes");
 
     // for (int j=0; j<7; j++) { k.gate("x", j); }
 
@@ -104,11 +108,13 @@ test_cz_anycommute(std::string v)
     std::string kernel_name = "test_" + v;
     float sweep_points[] = { 1 };
 
-    ql::quantum_platform starmon("starmon", "test_ideal.json");
+    ql::quantum_platform starmon("starmon", "test_commute_vars_7.json");
     ql::set_platform(starmon);
     ql::quantum_program prog(prog_name, starmon, n, 0);
     ql::quantum_kernel k(kernel_name, starmon, n, 0);
     prog.set_sweep_points(sweep_points, sizeof(sweep_points)/sizeof(float));
+
+    ql::options::set("scheduler_commute", "yes");
 
     // for (int j=0; j<7; j++) { k.gate("x", j); }
 
@@ -145,11 +151,13 @@ test_steaneqec(std::string v)
     std::string kernel_name = "test_" + v;
     float sweep_points[] = { 1 };
 
-    ql::quantum_platform starmon("starmon", "test_ideal.json");
+    ql::quantum_platform starmon("starmon", "test_commute_vars_7.json");
     ql::set_platform(starmon);
     ql::quantum_program prog(prog_name, starmon, n, 0);
     ql::quantum_kernel k(kernel_name, starmon, n, 0);
     prog.set_sweep_points(sweep_points, sizeof(sweep_points)/sizeof(float));
+
+    ql::options::set("scheduler_commute", "yes");
 
     k.gate("prepz", 3);
     k.gate("prepz", 5);
@@ -180,11 +188,13 @@ test_manyNN(std::string v)
     std::string kernel_name = "test_" + v;
     float sweep_points[] = { 1 };
 
-    ql::quantum_platform starmon("starmon", "test_ideal.json");
+    ql::quantum_platform starmon("starmon", "test_commute_vars_7.json");
     ql::set_platform(starmon);
     ql::quantum_program prog(prog_name, starmon, n, 0);
     ql::quantum_kernel k(kernel_name, starmon, n, 0);
     prog.set_sweep_points(sweep_points, sizeof(sweep_points)/sizeof(float));
+
+    ql::options::set("scheduler_commute", "yes");
 
     for (int j=0; j<7; j++) { k.gate("x", j); }
 
@@ -222,11 +232,13 @@ test_steane17qec1(std::string v)
     std::string kernel_name = "test_" + v;
     float sweep_points[] = { 1 };
 
-    ql::quantum_platform starmon("starmon", "test_ideal_17.json");
+    ql::quantum_platform starmon("starmon", "test_commute_vars_17.json");
     ql::set_platform(starmon);
     ql::quantum_program prog(prog_name, starmon, n, 0);
     ql::quantum_kernel k(kernel_name, starmon, n, 0);
     prog.set_sweep_points(sweep_points, sizeof(sweep_points)/sizeof(float));
+
+    ql::options::set("scheduler_commute", "yes");
 
 	k.gate("prepz", 5);
 	k.gate("prepz", 2);
@@ -255,11 +267,13 @@ test_steane17qec2(std::string v)
     std::string kernel_name = "test_" + v;
     float sweep_points[] = { 1 };
 
-    ql::quantum_platform starmon("starmon", "test_ideal_17.json");
+    ql::quantum_platform starmon("starmon", "test_commute_vars_17.json");
     ql::set_platform(starmon);
     ql::quantum_program prog(prog_name, starmon, n, 0);
     ql::quantum_kernel k(kernel_name, starmon, n, 0);
     prog.set_sweep_points(sweep_points, sizeof(sweep_points)/sizeof(float));
+
+    ql::options::set("scheduler_commute", "yes");
 
 	k.gate("prepz", 5);
 	k.gate("prepz", 2);

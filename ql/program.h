@@ -19,7 +19,6 @@
 #include <ql/arch/cc_light/cc_light_eqasm_compiler.h>
 #include <ql/arch/quantumsim_eqasm_compiler.h>
 #include <ql/arch/cc/eqasm_backend_cc.h>
-#include <ql/arch/ideal/ideal_eqasm_compiler.h>
 
 static unsigned long phi_node_count = 0;
 
@@ -83,10 +82,6 @@ class quantum_program
          else if (eqasm_compiler_name == "eqasm_backend_cc" )
          {
             backend_compiler = new ql::arch::eqasm_backend_cc();
-         }
-         else if (eqasm_compiler_name == "ideal_compiler" )
-         {
-            backend_compiler = new ql::arch::ideal_eqasm_compiler();
          }
          else
          {
@@ -470,7 +465,6 @@ class quantum_program
          else
          {
             if (eqasm_compiler_name == "cc_light_compiler"
-             || eqasm_compiler_name == "ideal_compiler"
              || eqasm_compiler_name == "eqasm_backend_cc")
             {
                backend_compiler->compile(name, kernels, platform);

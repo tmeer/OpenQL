@@ -18,6 +18,9 @@
 #include <ql/arch/cc_light/cc_light_eqasm.h>
 #include <ql/arch/cc_light/cc_light_scheduler.h>
 
+// comment next line and call to generate_commutation_variations out to omit it from compiler
+#include <ql/commute_variation.h>
+
 // eqasm code : set of cc_light_eqasm instructions
 typedef std::vector<ql::arch::cc_light_eqasm_instr_t> eqasm_t;
 
@@ -919,13 +922,17 @@ public:
             IOUT("Compiling kernel: " << kernel.name);
             sskernels_qisa << "\n" << kernel.name << ":" << std::endl;
             sskernels_qisa << get_prologue(kernel);
-            ql::circuit decomp_ckt;
-            ql::circuit& ckt = kernel.c;
             auto num_creg = kernel.creg_count;
-            if (! ckt.empty())
+            if (! kernel.c.empty())
             {
+                // find the shortest circuit by varying on gate commutation; replace kernel.c by it
+                // comment next lines and include of commute_variation.h out to omit it from compiler
+                commute_variation   cv;
+                cv.generate(kernel, platform, num_qubits, num_creg);
+
                 // decompose meta-instructions
-                decompose_instructions(ckt, decomp_ckt, platform);
+                ql::circuit decomp_ckt;
+                decompose_instructions(kernel.c, decomp_ckt, platform);
 
                 // schedule with platform resource constraints
                 ql::ir::bundles_t bundles = cc_light_schedule_rc(decomp_ckt, platform, num_qubits, num_creg);

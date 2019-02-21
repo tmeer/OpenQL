@@ -5,5 +5,5 @@ INCLUDE_DIRECTORIES(
 )
 
 
-ADD_EXECUTABLE(test_ideal test_ideal.cc)
-TARGET_LINK_LIBRARIES(test_ideal ${LEMON_LIBRARIES} )
+ADD_EXECUTABLE(test_commute_vars test_commute_vars.cc)
+TARGET_LINK_LIBRARIES(test_commute_vars ${LEMON_LIBRARIES} )
