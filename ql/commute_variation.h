@@ -2,7 +2,7 @@
  * @file   commute_variation.h
  * @date   02/2019
  * @author Hans van Someren
- * @brief  find circuit variations from commutable sets of gates
+ * @brief  find circuit variations from commutable sets of gates and select shortest
  */
 
 #ifndef QL_COMMUTE_VARIATION_H
@@ -11,36 +11,38 @@
 /*
     Summary
 
+    Commutation of gates such as Control-Unitaries (CZ, CNOT, etc.) is exploited
+    to find all variations of a given circuit by varying on the order of those commutations.
+    Each of the variations can be printed to a separate file.
+    At the end, the current kernel's circuit is replaced by a variation with a minimal depth.
+
     Control-Unitaries (e.g. CZ and CNOT) commute when their first operands are the same qubit.
     Furthermore, CNOTs in addition commute when their second operands are the same qubit.
     The OpenQL depgraph construction recognizes these and represents these in the dependence graph:
     - The Control-Unitary's first operands are seen as Reads.
-      On each such Read a dependence is created from the last Write (RAW) or last D (RAD) to the Control-Unitary,
-      and on each first Write or D after a set of Reads dependences are created from those Control-Unitaries
-      to that first Write (WAR) or that first D (DAR).
+      On each such Read a dependence is created
+      from the last Write (RAW) or last D (RAD) (i.e. last non-Read) to the Control-Unitary,
+      and on each first Write or D (i.e. first non-Read) after a set of Reads,
+      dependences are created from those Control-Unitaries to that first Write (WAR) or that first D (DAR).
     - The CNOT's second operands are seen as Ds (the D stands for controlleD).
-      On each such D a dependence is created from the last Write (DAW) or last Read (DAR) to the CNOT,
-      and on each first Write or Read after a set of Ds dependences are created from those CNOTs
-      to that first Write (WAD) or that first Read (RAD).
+      On each such D a dependence is created
+      from the last Write (DAW) or last Read (DAR) (i.e. last non-D) to the CNOT,
+      and on each first Write or Read (i.e. first non-D) after a set of Ds,
+      dependences are created from those CNOTs to that first Write (WAD) or that first Read (RAD).
     The commutable sets of Control-Unitaries (resp. CNOTs) can be found in the dependence graph
-    by finding those first non-Read (/first non-D) nodes that having such incoming WAR/DAR (/WAD/RAD) dependences
+    by finding those first non-Read (/first non-D) nodes that have such incoming WAR/DAR (/WAD/RAD) dependences
     and considering the nodes that those incoming dependences come from; those nodes form the commutable sets.
     Recognition of commutation is enabled during dependence graph construction by setting the option scheduler_commute to yes.
 
-    The code in this file exploits this to find all variations of a given circuit
-    that can be found by varying on the order of those commutations.
-    Each of the variations is printed in a separate file.
-    At the end, the current circuit is replaced by a circuit representing a variation with a minimal depth.
-
     The generation of all these variations is done as follows:
-    - At each node in the dependence graph, check the incoming dependences
+    - At each node in the dependence graph, check its incoming dependences
       whether this node is such a first non-Read or first non-D use;
       those incoming dependences are ordered by their dependence type and their cause (the qubit causing the dependence),
-      - when WAR/DAR then we have commutation on a Read operand (1st operand of CNOT,
-        both operands of CZ), the cause represents the operand qubit
+      - when WAR/DAR then we have commutation on a Read operand (1st operand of CNOT, both operands of CZ),
+        the cause represents the operand qubit
       - when WAD/RAD then we have commutation on a D operand (2nd operand of CNOT),
         the cause represents the operand qubit
-      and the optionally several sets of commutable gates are filtered out from these incoming dependences.
+      and the possibly several sets of commutable gates are filtered out from these incoming dependences.
       Each commutable set is represented by a list of arcs in the depgraph, i.e. arcs representing dependences
       from the node representing one of the commutable gates and to the gate with the first non-Read/D use.
       Note that in one set, of all incoming dependences the deptypes (WAR, DAR, WAD or RAD) must agree
@@ -56,16 +58,16 @@
       or DAD (for sets of CNOT 2nd operand commutable gates) dependences between the gates in the set, from first to last.
     - Then for each variation:
       - the dependences are added
-      - tested whether the dependence graph is still acyclic; when the dependence graph was cyclic
+      - tested whether the dependence graph is still acyclic; when the dependence graph became cyclic
         after having added the RAR/DAD dependences, some commutable sets were interfering, i.e. there were
         additional dependences (on the other operands) between members of those commutable sets that enforce an order
         between particular pairs of members of those sets;
-        when it is cyclic, this variation is not feasible and can be skipped
-      - a schedule is computed and its depth is kept
-      - the schedule is printed with the variation number in its name
+        when the dependence graph became cyclic, this variation is not feasible and can be skipped
+      - a schedule is computed and its depth and variation number are kept
+      - the schedule is optionally printed with the variation number in its name
       - and in any case then the added dependences are deleted so that the depgraph is restored to its original state.
     One of the variations with the least depth is stored in the current circuit as result of this variation search.
-    Also, the scheduler_commute option is turned off so that future schedulers will accept the found order.
+    Also, the scheduler_commute option is turned off so that future schedulers will respect the found order.
 */
 
 #include <ql/utils.h>
@@ -87,6 +89,7 @@ namespace arch
 class Depgraph : public Scheduler
 {
 private:
+    // variation count multiply aiming to catch overflow
     vc_t mult(vc_t a, vc_t b)
     {
         vc_t    r = a * b;
@@ -180,11 +183,11 @@ public:
         }
     }
 
-    // each incoming dependence need not be caused by the same qubit, split those in separate sets
+    // split the incoming dependences (in arclist) into a separate set for each qubit cause
     // at the same time, compute the size of the resulting sets and from that the number of variations it results in
     // the running total (var_count) is multiplied by each of these resulting numbers to give the total number of variations
     // the individual sets are added as separate lists to varlist, which is a list of those individual sets
-    // the individual sets are implemented as lists and are called subvarlists above
+    // the individual sets are implemented as lists and are called subvarslist here
     void add_variations(std::list<ListDigraph::Arc>& arclist, std::list<std::list<ListDigraph::Arc>>& varslist, vc_t& var_count)
     {
         while (arclist.size() > 1)
@@ -197,16 +200,16 @@ public:
                 // DOUT("At " << instruction[graph.target(TMParclist.front())]->qasm() << " found commuting gates on q" << operand << ":");
                 int perm_index = 0;
                 vc_t perm_count = 1;
-                std::list<ListDigraph::Arc> var;
+                std::list<ListDigraph::Arc> subvarslist;
                 for ( auto a : TMParclist )
                 {
                     ListDigraph::Node srcNode  = graph.source(a);
                     // DOUT("... " << instruction[srcNode]->qasm() << " as " << DepTypesNames[depType[a]] << " by q" << cause[a]);
                     perm_index++;
                     perm_count = mult(perm_count, perm_index);
-                    var.push_back(a);
+                    subvarslist.push_back(a);
                 }
-                varslist.push_back(var);
+                varslist.push_back(subvarslist);
                 var_count = mult(var_count, perm_count);
             }
             arclist.remove_if([this,operand](ListDigraph::Arc a) { return cause[a] == operand; });
@@ -238,8 +241,10 @@ public:
     }
 
     // for each node scan all incoming dependences
-    // - when WAR/DAR then we have commutation on a Read operand (1st operand of CNOT, both operands of CZ)
-    // - when WAD/RAD then we have commutation on a D operand (2nd operand of CNOT)
+    // - when WAR/DAR then we have commutation on a Read operand (1st operand of CNOT, both operands of CZ);
+    //   those incoming dependences are collected in Rarclist and further split by their cause in add_variations
+    // - when WAD/RAD then we have commutation on a D operand (2nd operand of CNOT);
+    //   those incoming dependences are collected in Darclist and further split by their cause in add_variations
     void find_variations(std::list<std::list<ListDigraph::Arc>>& varslist, vc_t& total)
     {
         for (ListDigraph::NodeIt n(graph); n != INVALID; ++n)
@@ -353,10 +358,6 @@ public:
         sched.find_variations(varslist, total);
         sched.show_sets(varslist);
 
-        // Find out which depth heuristics would find");
-        auto hdepth = sched.schedule_rc(platform);
-        DOUT("Heuristics would find depth " << hdepth);
-
         DOUT("Start enumerating " << total << " variations ...");
         DOUT("=========================\n\n");
 
@@ -394,20 +395,23 @@ public:
         {
             DOUT("... depth " << vit->first << ": " << vit->second.size() << " variations");
         }
-        DOUT("Note that heuristics would have found depth " << hdepth);
         auto mit = vars_per_depth.begin();
         auto min_depth = mit->first;
         auto vars = mit->second;
         auto result_varno = vars.front();       // just the first one, could be more sophisticated
         DOUT("Min depth=" << min_depth << ", number of variations=" << vars.size() << ", selected varno=" << result_varno);
 
-        // Set kernel.c representing result variation by generating it and scheduling it again ...
+        // Find out which depth heuristics would find
+        auto hdepth = sched.schedule_rc(platform);
+        DOUT("Note that heuristics would find a schedule of the circuit with depth " << hdepth);
+
+        // Set kernel.c representing result variation by regenerating it and scheduling it ...
         sched.gen_variation(varslist, newarcslist, result_varno);
         (void) sched.schedule_rc(platform); // sets kernel.c reflecting the additional deps of the variation
         sched.clean_variation(newarcslist);
         DOUT("Find circuit with minimum depth while exploiting commutation [Done]");
 
-        ql::options::set("scheduler_commute", "no");    // next schedulers will not exploit commutation anymore
+        ql::options::set("scheduler_commute", "no");    // next schedulers will respect the commutation order found
     }
 };
 
