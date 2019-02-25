@@ -26,7 +26,7 @@ test_cnot_controlcommute(std::string v)
     ql::quantum_kernel k(kernel_name, starmon, n, 0);
     prog.set_sweep_points(sweep_points, sizeof(sweep_points)/sizeof(float));
 
-    ql::options::set("scheduler_commute", "yes");
+    ql::options::set("scheduler_commute", "yes");   // because is reset by vary_commutations algorithm
 
     // for (int j=0; j<7; j++) { k.gate("x", j); }
 
@@ -70,7 +70,7 @@ test_cnot_targetcommute(std::string v)
     ql::quantum_kernel k(kernel_name, starmon, n, 0);
     prog.set_sweep_points(sweep_points, sizeof(sweep_points)/sizeof(float));
 
-    ql::options::set("scheduler_commute", "yes");
+    ql::options::set("scheduler_commute", "yes");   // because is reset by vary_commutations algorithm
 
     // for (int j=0; j<7; j++) { k.gate("x", j); }
 
@@ -114,7 +114,7 @@ test_cz_anycommute(std::string v)
     ql::quantum_kernel k(kernel_name, starmon, n, 0);
     prog.set_sweep_points(sweep_points, sizeof(sweep_points)/sizeof(float));
 
-    ql::options::set("scheduler_commute", "yes");
+    ql::options::set("scheduler_commute", "yes");   // because is reset by vary_commutations algorithm
 
     // for (int j=0; j<7; j++) { k.gate("x", j); }
 
@@ -157,7 +157,7 @@ test_steaneqec(std::string v)
     ql::quantum_kernel k(kernel_name, starmon, n, 0);
     prog.set_sweep_points(sweep_points, sizeof(sweep_points)/sizeof(float));
 
-    ql::options::set("scheduler_commute", "yes");
+    ql::options::set("scheduler_commute", "yes");   // because is reset by vary_commutations algorithm
 
     k.gate("prepz", 3);
     k.gate("prepz", 5);
@@ -194,7 +194,7 @@ test_manyNN(std::string v)
     ql::quantum_kernel k(kernel_name, starmon, n, 0);
     prog.set_sweep_points(sweep_points, sizeof(sweep_points)/sizeof(float));
 
-    ql::options::set("scheduler_commute", "yes");
+    ql::options::set("scheduler_commute", "yes");   // because is reset by vary_commutations algorithm
 
     for (int j=0; j<7; j++) { k.gate("x", j); }
 
@@ -238,7 +238,7 @@ test_steane17qec1(std::string v)
     ql::quantum_kernel k(kernel_name, starmon, n, 0);
     prog.set_sweep_points(sweep_points, sizeof(sweep_points)/sizeof(float));
 
-    ql::options::set("scheduler_commute", "yes");
+    ql::options::set("scheduler_commute", "yes");   // because is reset by vary_commutations algorithm
 
 	k.gate("prepz", 5);
 	k.gate("prepz", 2);
@@ -273,7 +273,7 @@ test_steane17qec2(std::string v)
     ql::quantum_kernel k(kernel_name, starmon, n, 0);
     prog.set_sweep_points(sweep_points, sizeof(sweep_points)/sizeof(float));
 
-    ql::options::set("scheduler_commute", "yes");
+    ql::options::set("scheduler_commute", "yes");   // because is reset by vary_commutations algorithm
 
 	k.gate("prepz", 5);
 	k.gate("prepz", 2);
@@ -299,6 +299,7 @@ int main(int argc, char ** argv)
     ql::options::set("scheduler_uniform", "no");
     ql::options::set("scheduler", "ALAP");
     ql::options::set("scheduler_post179", "yes");
+    ql::options::set("vary_commutations", "yes");
 
     test_cnot_controlcommute("cnot_controlcommute");
     test_cnot_targetcommute("cnot_targetcommute");
@@ -306,7 +307,7 @@ int main(int argc, char ** argv)
     test_steaneqec("steaneqec");
     test_steane17qec1("steane17qec1");
     test_steane17qec2("steane17qec2");
-//  test_manyNN("manyNN");
+//  test_manyNN("manyNN");          // results in almost 10000 variations, takes a while but should work
 
     return 0;
 }

@@ -17,8 +17,6 @@
 #include <ql/eqasm_compiler.h>
 #include <ql/arch/cc_light/cc_light_eqasm.h>
 #include <ql/arch/cc_light/cc_light_scheduler.h>
-
-// comment next line out and call to cv.generate out to omit it from compiler
 #include <ql/commute_variation.h>
 
 // eqasm code : set of cc_light_eqasm instructions
@@ -925,10 +923,12 @@ public:
             auto num_creg = kernel.creg_count;
             if (! kernel.c.empty())
             {
-                // find the shortest circuit by varying on gate commutation; replace kernel.c by it
-                // comment next lines and include of commute_variation.h out to omit it from compiler
-                commute_variation   cv;
-                cv.generate(kernel, platform, num_qubits, num_creg);
+                if( ql::options::get("vary_commutations") == "yes" )
+                {
+                    // find the shortest circuit by varying on gate commutation; replace kernel.c by it
+                    commute_variation   cv;
+                    cv.generate(kernel, platform, num_qubits, num_creg);
+                }
 
                 // decompose meta-instructions
                 ql::circuit decomp_ckt;
