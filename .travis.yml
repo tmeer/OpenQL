@@ -40,15 +40,19 @@ install:
   - python3 -m pip install . 
   - cd ../../../.
   - python3 -m pip install . 
-script: python3 -m pytest
+script:
+  - sudo ln -s /usr/bin/gcc-6 /usr/local/bin/gcc
+  - sudo ln -s /usr/bin/g++-6 /usr/local/bin/g++
+  - gcc -v && g++ -v && cmake --version
+  - python3 -m pytest
 
 
 
 addons:
   apt:
     packages:
-      - gcc-7
-      - g++-7
+      - gcc-6
+      - g++-6
       - cmake
       - swig
       - flex
