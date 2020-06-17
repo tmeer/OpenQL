@@ -68,6 +68,8 @@ addons:
       - bison
   homebrew:
     packages:
+      - gcc-7
+      - g++-7
       - python3
       - cmake
       - swig

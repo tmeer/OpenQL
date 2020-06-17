@@ -18,9 +18,11 @@ namespace ql
 void visualize(const ql::quantum_program* program, const Layout layout)
 {
     IOUT("starting visualization...");
+    IOUT("validating layout...");
 	validateLayout(layout);
 
     // Get the gate list from the program.
+    IOUT("getting gate list...");
     std::vector<ql::gate*> gates;
     std::vector<ql::quantum_kernel> kernels = program->kernels;
     for (ql::quantum_kernel kernel : kernels)
@@ -30,11 +32,13 @@ void visualize(const ql::quantum_program* program, const Layout layout)
     }
     
 	// Calculate amount of cycles.
+    IOUT("calculating amount of cycles...");
     unsigned int amountOfCycles = calculateAmountOfCycles(gates);
 
 	// Compress the circuit in terms of cycles and gate duration if the option has been set.
 	if (layout.cycles.compressCycles)
 	{
+        IOUT("compressing circuit...");
 		std::vector<bool> filledCycles(amountOfCycles);
 		for (unsigned int i = 0; i < gates.size(); i++)
 		{
@@ -75,18 +79,21 @@ void visualize(const ql::quantum_program* program, const Layout layout)
 	}
 
 	// Calculate amount of qubits and classical bits.
+    IOUT("calculating amount of qubits and classical bits...");
 	const unsigned int amountOfQubits = calculateAmountOfBits(gates, &gate::operands);
 	const unsigned int amountOfCbits = calculateAmountOfBits(gates, &gate::creg_operands);
 	CircuitData circuitData = { amountOfQubits, amountOfCbits, amountOfCycles };
 
     
 	// Calculate image width and height based on the amount of cycles and amount of operands. The height depends on whether classical bit lines are grouped or not.
+    IOUT("calculating image width and height...");
 	const unsigned int width = (layout.bitLine.drawLabels ? layout.bitLine.labelColumnWidth : 0) + amountOfCycles * layout.grid.cellSize + 2 * layout.grid.borderSize;
 	const unsigned int amountOfRows = amountOfQubits + (layout.bitLine.groupClassicalLines ? (amountOfCbits > 0 ? 1 : 0) : amountOfCbits);
 	const unsigned int height = (layout.cycles.showCycleNumbers ? layout.cycles.rowHeight : 0) + amountOfRows * layout.grid.cellSize + 2 * layout.grid.borderSize;
 
     
 	// Initialize image.
+    IOUT("initializing image...");
 	const unsigned int numberOfChannels = 3;
 	CImg<unsigned char> image(width, height, 1, numberOfChannels);
 	image.fill(255);
@@ -94,10 +101,12 @@ void visualize(const ql::quantum_program* program, const Layout layout)
 	// Draw the cycle numbers if the option has been set.
 	if (layout.cycles.showCycleNumbers)
 	{
+        IOUT("drawing cycle numbers...");
 		drawCycleNumbers(image, layout, circuitData);
 	}
 
 	// Draw the quantum and classical bit lines.
+    IOUT("drawing qubit lines...");
 	for (unsigned int i = 0; i < amountOfQubits; i++)
 	{
 		drawBitLine(image, layout, QUANTUM, i, circuitData);
@@ -105,11 +114,13 @@ void visualize(const ql::quantum_program* program, const Layout layout)
 	// Draw the grouped classical bit lines if the option is set.
 	if (amountOfCbits > 0 && layout.bitLine.groupClassicalLines)
 	{
+        IOUT("drawing grouped classical bit lines...");
 		drawGroupedClassicalBitLine(image, layout, circuitData);
 	}
 	// Otherwise draw each classical bit line seperate.
 	else
 	{
+        IOUT("drawing ungrouped classical bit lines...");
 		for (unsigned int i = amountOfQubits; i < amountOfQubits + amountOfCbits; i++)
 		{
 			drawBitLine(image, layout, CLASSICAL, i, circuitData);
@@ -117,12 +128,16 @@ void visualize(const ql::quantum_program* program, const Layout layout)
 	}
 
 	// Draw the gates.
+    IOUT("drawing gates...");
 	for (gate* gate : gates)
 	{
+        //const GateConfig gateConfig = layout.gateConfigs.at(gate->type());
+        IOUT("drawing gate: [name: " + gate->name + "]");
 		drawGate(image, layout, circuitData, gate);
 	}
 
 	// Display the image.
+    IOUT("displaying image...");
 	image.display("Quantum Circuit");
 
     IOUT("visualization complete...");
@@ -301,6 +316,7 @@ void drawGate(cimg_library::CImg<unsigned char> &image, const Layout layout, con
 
 	if (amountOfOperands > 1)
 	{
+        IOUT("setting up multi-operand gate...");
 		// Draw the lines between each node. If this is done before drawing the nodes, there is no need to calculate line segments, we can just draw one
 		// big line between the nodes and the nodes will be drawn on top of those.
 		// Note: does not work with transparent nodes! If those are ever implemented, the connection line drawing will need to be changed!
@@ -371,11 +387,13 @@ void drawGate(cimg_library::CImg<unsigned char> &image, const Layout layout, con
 		{
 			image.draw_line(connectionPosition.x0, connectionPosition.y0, connectionPosition.x1, connectionPosition.y1, gateConfig.connectionColor.data());
 		}
+        IOUT("finished setting up multi-operand gate");
 	}
 
 	// Draw the gate duration outline if the option has been set.
 	if (!layout.cycles.compressCycles && layout.cycles.showGateDurationOutline)
 	{
+        IOUT("drawing gate duration outline...");
 		const unsigned int gateDurationInCycles = ((unsigned int)gate->duration) / 40;
 		// Only draw the gate outline if the gate takes more than one cycle.
 		if (gateDurationInCycles > 1)
@@ -398,29 +416,41 @@ void drawGate(cimg_library::CImg<unsigned char> &image, const Layout layout, con
 	}
 
 	// Draw the nodes.
+    IOUT("drawing gate nodes...");
 	for (unsigned int i = 0; i < amountOfOperands; i++)
 	{
-		const Node node = gateConfig.nodes.at(i);
+        IOUT("drawing gate node with index: " + std::to_string(i) + "...");
+        //TODO: change the try-catch later on! the gate config will be read from somewhere else than the default layout
+        try
+        {
+		    const Node node = gateConfig.nodes.at(i);
+            const BitType operandType = (i >= gate->operands.size()) ? CLASSICAL : QUANTUM;
+            const unsigned int index = (operandType == QUANTUM) ? i : (i - (unsigned int)gate->operands.size());
+            const NodePositionData positionData =
+            {
+	            (layout.grid.cellSize - node.radius * 2) / 2,
+	            labelColumnWidth,
+	            cycleNumbersRowHeight,
+	            (unsigned int)gate->cycle,
+	            operandType == CLASSICAL ? (unsigned int)gate->creg_operands.at(index) + circuitData.amountOfQubits : (unsigned int)gate->operands.at(index)
+            };
 
-		const BitType operandType = (i >= gate->operands.size()) ? CLASSICAL : QUANTUM;
-		const unsigned int index = (operandType == QUANTUM) ? i : (i - (unsigned int)gate->operands.size());
-		const NodePositionData positionData =
-		{
-			(layout.grid.cellSize - node.radius * 2) / 2,
-			labelColumnWidth,
-			cycleNumbersRowHeight,
-			(unsigned int)gate->cycle,
-			operandType == CLASSICAL ? (unsigned int)gate->creg_operands.at(index) + circuitData.amountOfQubits : (unsigned int)gate->operands.at(index)
-		};
-
-		switch (node.type)
-		{
-			case NONE:		break; // Do nothing.
-			case GATE:		drawGateNode(image, layout, circuitData, node, positionData); break;
-			case CONTROL:	drawControlNode(image, layout, circuitData, node, positionData); break;
-			case NOT:		drawNotNode(image, layout, circuitData, node, positionData); break;
-			case CROSS:		drawCrossNode(image, layout, circuitData, node, positionData); break;
-		}
+            switch (node.type)
+            {
+	            case NONE:		/*IOUT("node.type = NONE");*/ break; // Do nothing.
+	            case GATE:		/*IOUT("node.type = GATE");*/ drawGateNode(image, layout, circuitData, node, positionData); break;
+	            case CONTROL:	/*IOUT("node.type = CONTROL");*/ drawControlNode(image, layout, circuitData, node, positionData); break;
+	            case NOT:		/*IOUT("node.type = NOT");*/ drawNotNode(image, layout, circuitData, node, positionData); break;
+	            case CROSS:		/*IOUT("node.type = CROSS");*/ drawCrossNode(image, layout, circuitData, node, positionData); break;
+                default:        EOUT("Unknown gate display node type!"); break;
+            }
+        }
+        catch (const std::out_of_range& e)
+        {
+            return;
+        }
+		
+        IOUT("finished drawing gate node with index: " + std::to_string(i) + "...");
 	}
 
 	// Draw the measurement symbol.
