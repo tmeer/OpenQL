@@ -41,6 +41,7 @@ void visualize(const ql::quantum_program* program, const Layout layout)
 			filledCycles.at(gates.at(i)->cycle) = true;
 		}
 
+        //replace with DOUT
 		//std::cout << "amount of cycles before compression: " << amountOfCycles << std::endl;
 		unsigned int amountOfCompressions = 0;
 		for (unsigned int i = 0; i < filledCycles.size(); i++)
