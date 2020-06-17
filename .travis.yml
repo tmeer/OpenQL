@@ -47,6 +47,8 @@ script: python3 -m pytest
 addons:
   apt:
     packages:
+      - gcc-7
+      - g++-7
       - cmake
       - swig
       - flex
