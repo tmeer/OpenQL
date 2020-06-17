@@ -17,6 +17,7 @@ matrix:
     - name: "Python 3.7 on xenial"
       os: linux
       dist: xenial
+      sudo: required
       language: python
       python: 3.7
 
@@ -49,7 +50,6 @@ install:
   - cd ../../../.
   - python3 -m pip install . 
 script:
-
   - python3 -m pytest
 
 
