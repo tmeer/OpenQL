@@ -26,10 +26,10 @@ os.chdir(buildDir)
 
 if platform == "linux" or platform == "linux2":
     print('Detected Linux OS, installing openql ... ')
-    cmd = 'cmake ..'
+    cmd = 'cmake -LA ..'
     proc = subprocess.Popen(cmd, shell=True)
     proc.communicate()
-    cmd = 'make -j{}'.format(nprocs)
+    cmd = 'make VERBOSE=1 -j{}'.format(nprocs)
     proc = subprocess.Popen(cmd, shell=True)
     proc.communicate()
     clibname = "_openql.so"
