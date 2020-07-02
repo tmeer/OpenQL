@@ -39,7 +39,7 @@ void PassManager::compile(ql::quantum_program *program)
             std::string hwconfig = pass->getPassOptions()->getOption("hwconfig");   
             program->platform = *(new ql::quantum_platform("testPlatform",hwconfig));
         }
-        assert(program->platform);
+        //assert(program->platform);
    
         if(!pass->getSkip())
         {

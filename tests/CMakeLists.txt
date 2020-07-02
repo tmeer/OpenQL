@@ -44,4 +44,8 @@ CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/tests/cc/test_cfg_cc.json
 	test_cfg_cc.json COPYONLY)
 
 ADD_EXECUTABLE(test_mapper test_mapper.cc )
-TARGET_LINK_LIBRARIES(test_mapper ql lexgramstatic pthread X11 ${LEMON_LIBRARIES})
+IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	TARGET_LINK_LIBRARIES(test_mapper ql lexgramstatic ${LEMON_LIBRARIES})
+ELSE()
+	TARGET_LINK_LIBRARIES(test_mapper ql lexgramstatic pthread X11 ${LEMON_LIBRARIES})
+ENDIF()
