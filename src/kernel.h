@@ -26,6 +26,7 @@
 #include "unitary.h"
 #include "platform.h"
 
+typedef unsigned int uint;
 
 namespace ql
 {
